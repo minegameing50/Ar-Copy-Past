@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GestureClip — AR Copy & Paste</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Space+Grotesk:wght@300;400;600;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --neon:  #00ffe7;
+  --neon2: #a259ff;
+  --red:   #ff3c6e;
+  --bg:    #06090f;
+  --panel: rgba(10,16,30,0.9);
+  --border: rgba(0,255,231,0.15);
+  --text:  #cde4f5;
+  --glow:  0 0 14px #00ffe780, 0 0 36px #00ffe730;
+  --glow2: 0 0 14px #a259ff80, 0 0 36px #a259ff30;
+}
+
+html, body { height: 100%; background: var(--bg); font-family: 'Space Grotesk', sans-serif; color: var(--text); overflow: hidden; }
+
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(0,255,231,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,231,0.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+body::after {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 55% 55% at 10% 50%, rgba(0,255,231,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 45% 55% at 90% 50%, rgba(162,89,255,0.07) 0%, transparent 70%);
+}
+
+#app {
+  position: relative; z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 56px 1fr 52px;
+  height: 100vh;
+}
+
+/* HEADER */
+header {
+  grid-column: 1/-1;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(6,9,15,0.95);
+  backdrop-filter: blur(12px);
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-gem {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--neon), var(--neon2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; box-shadow: var(--glow);
+}
+.logo h1 { font-size: 1rem; font-weight: 700; letter-spacing: 0.12em; color: var(--neon); text-shadow: var(--glow); }
+.logo sub { font-size: 0.6rem; color: rgba(205,228,245,0.4); letter-spacing: 0.2em; display: block; margin-top: -2px; }
+.pills { display: flex; gap: 10px; }
+.pill {
+  display: flex; align-items: center; gap: 6px;
+  font-family: 'Share Tech Mono', monospace; font-size: 0.68rem; letter-spacing: 0.1em;
+  padding: 4px 12px; border: 1px solid var(--border); border-radius: 100px;
+  background: rgba(0,255,231,0.03);
+}
+.dot { width: 6px; height: 6px; border-radius: 50%; background: #333; transition: background .3s, box-shadow .3s; }
+.dot.on  { background: var(--neon);  box-shadow: 0 0 7px var(--neon);  }
+.dot.on2 { background: var(--neon2); box-shadow: 0 0 7px var(--neon2); }
+
+/* GESTURE PANEL */
+#gesture-panel {
+  position: relative; overflow: hidden;
+  border-right: 1px solid var(--border);
+  background: rgba(6,9,15,0.6);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  cursor: none;
+}
+#gesture-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+.mode-tabs {
+  position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+  display: flex; border: 1px solid var(--border); border-radius: 100px;
+  background: rgba(6,9,15,0.85); overflow: hidden; z-index: 5;
+}
+.mode-tab {
+  padding: 5px 16px;
+  font-family: 'Share Tech Mono', monospace; font-size: 0.68rem; letter-spacing: 0.1em;
+  border: none; background: transparent; color: rgba(205,228,245,0.4);
+  cursor: pointer; transition: color .2s, background .2s;
+}
+.mode-tab.active { background: rgba(0,255,231,0.1); color: var(--neon); }
+
+#instruction-cards {
+  display: flex; flex-direction: column; gap: 14px; z-index: 4; pointer-events: none;
+  transition: opacity .3s;
+}
+.icard {
+  display: flex; align-items: center; gap: 16px;
+  background: rgba(8,16,30,0.88);
+  border: 1px solid var(--border); border-radius: 14px;
+  padding: 14px 20px; min-width: 270px;
+  transition: border-color .3s, box-shadow .3s;
+}
+.icard.copy-card  { border-color: rgba(0,255,231,0.25); }
+.icard.paste-card { border-color: rgba(162,89,255,0.25); }
+.icard.copy-card.lit  { border-color: var(--neon);  box-shadow: var(--glow); }
+.icard.paste-card.lit { border-color: var(--neon2); box-shadow: var(--glow2); }
+.icard-gesture { font-size: 2rem; transition: filter .3s, transform .3s; filter: grayscale(.4); }
+.icard.lit .icard-gesture { filter: none; transform: scale(1.15); }
+.icard-text { flex: 1; }
+.icard-title { font-weight: 700; font-size: 0.9rem; letter-spacing: 0.06em; }
+.icard.copy-card  .icard-title { color: var(--neon);  text-shadow: var(--glow); }
+.icard.paste-card .icard-title { color: var(--neon2); text-shadow: var(--glow2); }
+.icard-desc { font-size: 0.72rem; color: rgba(205,228,245,0.45); margin-top: 3px; line-height: 1.5; }
+
+/* Camera layer */
+#cam-view { display: none; position: absolute; inset: 0; z-index: 3; }
+#cam-view video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); opacity: 0.7; }
+#cam-view canvas { position: absolute; inset: 0; width: 100%; height: 100%; transform: scaleX(-1); pointer-events: none; }
+
+#panel-flash {
+  position: absolute; inset: 0; pointer-events: none; z-index: 7;
+  border: 3px solid transparent;
+  transition: border-color .15s, box-shadow .15s;
+}
+#panel-flash.copy-flash  { border-color: var(--neon);  box-shadow: inset 0 0 60px rgba(0,255,231,.2); }
+#panel-flash.paste-flash { border-color: var(--neon2); box-shadow: inset 0 0 60px rgba(162,89,255,.2); }
+
+#badge {
+  position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%) scale(.85);
+  background: rgba(6,9,15,0.92); border: 1.5px solid var(--neon); border-radius: 12px;
+  padding: 9px 22px; font-family: 'Share Tech Mono', monospace; font-size: .82rem; letter-spacing: .1em;
+  color: var(--neon); text-shadow: var(--glow); box-shadow: var(--glow);
+  opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; white-space: nowrap; z-index: 8;
+}
+#badge.show      { opacity: 1; transform: translateX(-50%) scale(1); }
+#badge.paste-mode { border-color: var(--neon2); color: var(--neon2); text-shadow: var(--glow2); box-shadow: var(--glow2); }
+
+/* EDITOR */
+#editor-panel { display: flex; flex-direction: column; background: var(--panel); backdrop-filter: blur(6px); }
+.ep-header {
+  padding: 11px 20px 9px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.ep-title { font-size: .68rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(205,228,245,.4); }
+.ep-tag {
+  font-family: 'Share Tech Mono', monospace; font-size: .62rem; letter-spacing: .12em;
+  color: var(--neon2); border: 1px solid rgba(162,89,255,.3); padding: 2px 9px; border-radius: 100px;
+  background: rgba(162,89,255,.07);
+}
+#editor {
+  flex: 1; resize: none; background: transparent; border: none; outline: none;
+  color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: .92rem;
+  line-height: 1.8; padding: 20px; caret-color: var(--neon);
+}
+#editor::selection { background: rgba(0,255,231,.18); }
+
+.clip-section { border-top: 1px solid var(--border); }
+.clip-header  { padding: 9px 20px 6px; }
+.clip-label   { font-size: .65rem; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: rgba(205,228,245,.35); }
+#clip-box {
+  margin: 0 14px 12px; min-height: 44px; max-height: 80px; overflow-y: auto;
+  background: rgba(0,255,231,.03); border: 1px solid rgba(0,255,231,.1);
+  border-radius: 8px; padding: 9px 13px;
+  font-family: 'Share Tech Mono', monospace; font-size: .75rem; line-height: 1.6;
+  color: var(--neon); word-break: break-all; transition: border-color .3s, box-shadow .3s;
+}
+#clip-box.empty { color: rgba(205,228,245,.22); font-style: italic; }
+#clip-box.pop   { border-color: var(--neon); box-shadow: 0 0 18px rgba(0,255,231,.1); }
+
+/* FOOTER */
+footer {
+  grid-column: 1/-1;
+  display: flex; align-items: center; justify-content: center; gap: 32px;
+  padding: 0 24px; border-top: 1px solid var(--border);
+  background: rgba(6,9,15,0.96);
+}
+.hint { display: flex; align-items: center; gap: 9px; font-size: .73rem; color: rgba(205,228,245,.45); }
+.hint-icon { font-size: 1.15rem; }
+.hint b { color: var(--text); font-weight: 600; }
+.hdiv { width: 1px; height: 18px; background: var(--border); }
+
+/* TOASTS */
+#toasts { position: fixed; top: 68px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+.toast { padding: 9px 22px; border-radius: 10px; font-family: 'Share Tech Mono', monospace; font-size: .8rem; letter-spacing: .08em; animation: tIn .25s ease, tOut .35s ease 1.9s forwards; }
+.tc { background: rgba(0,255,231,.1); border: 1px solid var(--neon); color: var(--neon); box-shadow: var(--glow); }
+.tp { background: rgba(162,89,255,.1); border: 1px solid var(--neon2); color: var(--neon2); box-shadow: var(--glow2); }
+@keyframes tIn  { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
+@keyframes tOut { to { opacity: 0; transform: translateY(-8px); } }
+
+/* MODAL */
+#cam-modal { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(6,9,15,.88); backdrop-filter: blur(8px); align-items: center; justify-content: center; }
+#cam-modal.show { display: flex; }
+.modal-box {
+  background: rgba(10,16,30,.98); border: 1px solid var(--border);
+  border-radius: 18px; padding: 32px 36px; max-width: 380px; width: 90%;
+  text-align: center; display: flex; flex-direction: column; align-items: center; gap: 14px;
+}
+.modal-box h2 { font-size: 1.1rem; color: var(--neon); letter-spacing: .08em; }
+.modal-box p  { font-size: .82rem; color: rgba(205,228,245,.55); line-height: 1.7; }
+.modal-btns   { display: flex; gap: 12px; margin-top: 4px; flex-wrap: wrap; justify-content: center; }
+.mbtn {
+  padding: 10px 22px; border-radius: 9px; cursor: pointer;
+  font-family: 'Share Tech Mono', monospace; font-size: .78rem; letter-spacing: .08em;
+  border: 1.5px solid; background: transparent; transition: background .2s, box-shadow .2s;
+}
+.mbtn-yes { border-color: var(--neon); color: var(--neon); }
+.mbtn-yes:hover { background: rgba(0,255,231,.1); box-shadow: var(--glow); }
+.mbtn-no  { border-color: rgba(205,228,245,.25); color: rgba(205,228,245,.45); }
+.mbtn-no:hover { background: rgba(205,228,245,.05); }
+.cam-steps {
+  text-align: left; font-family: 'Share Tech Mono', monospace; font-size: .7rem; line-height: 1.9;
+  color: rgba(205,228,245,.5); background: rgba(0,255,231,.04); border: 1px solid rgba(0,255,231,.1);
+  border-radius: 10px; padding: 12px 16px; width: 100%;
+}
+.cam-steps b { color: var(--neon); }
+</style>
+</head>
+<body>
+
+<div id="toasts"></div>
+
+<div id="cam-modal">
+  <div class="modal-box">
+    <div style="font-size:2rem">📷</div>
+    <h2>Enable AR Camera?</h2>
+    <p>Use your <b>real hand gestures</b> via webcam.<br>Requires camera permission on an <b>https://</b> page.</p>
+    <div class="cam-steps" id="cam-steps">Loading…</div>
+    <div class="modal-btns">
+      <button class="mbtn mbtn-yes" onclick="startCamera()">Allow Camera</button>
+      <button class="mbtn mbtn-no"  onclick="closeCamModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+  <header>
+    <div class="logo">
+      <div class="logo-gem">✦</div>
+      <div><h1>GestureClip</h1><sub>AR COPY &amp; PASTE</sub></div>
+    </div>
+    <div class="pills">
+      <div class="pill"><div class="dot on"></div><span id="s-mode">MOUSE MODE</span></div>
+      <div class="pill"><div class="dot on2"></div><span id="s-hand">READY</span></div>
+    </div>
+  </header>
+
+  <div id="gesture-panel">
+    <canvas id="gesture-canvas"></canvas>
+
+    <div class="mode-tabs">
+      <button class="mode-tab active" id="tab-mouse" onclick="setMode('mouse')">🖱 Mouse</button>
+      <button class="mode-tab"        id="tab-cam"   onclick="requestCamera()">📷 Camera</button>
+    </div>
+
+    <div id="instruction-cards">
+      <div class="icard copy-card" id="card-copy">
+        <div class="icard-gesture">🤏</div>
+        <div class="icard-text">
+          <div class="icard-title">HOLD — COPY</div>
+          <div class="icard-desc">Click &amp; hold left button 0.8s<br>in this zone → copies selection</div>
+        </div>
+      </div>
+      <div class="icard paste-card" id="card-paste">
+        <div class="icard-gesture">✋</div>
+        <div class="icard-text">
+          <div class="icard-title">SWIPE RIGHT — PASTE</div>
+          <div class="icard-desc">Click &amp; drag right quickly<br>→ pastes clipboard into editor</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="cam-view">
+      <video id="cam-video" playsinline autoplay muted></video>
+      <canvas id="cam-canvas"></canvas>
+    </div>
+
+    <div id="panel-flash"></div>
+    <div id="badge">✦</div>
+  </div>
+
+  <div id="editor-panel">
+    <div class="ep-header">
+      <span class="ep-title">Text Editor</span>
+      <span class="ep-tag">gesture-enabled</span>
+    </div>
+    <textarea id="editor" spellcheck="false">Welcome to GestureClip — works instantly, no camera needed!
+
+── How to use (Mouse Mode) ──────────────────
+① Select text here with your mouse / keyboard
+② Move your cursor into the LEFT PANEL
+③ Click & HOLD for 0.8 sec  →  🤏 COPY
+④ Click & DRAG to the RIGHT  →  ✋ PASTE
+
+── Try it! Select this line ─────────────────
+The quick brown fox jumps over the lazy dog.
+Pack my box with five dozen liquor jugs.
+How vexingly quick daft zebras jump!
+
+── Camera Mode (optional) ───────────────────
+Click the 📷 Camera tab above the left panel.
+Needs camera permission on an https:// page.
+  🤏 Pinch fingers   →  COPY
+  ✋ Open palm       →  PASTE
+
+── Tips ─────────────────────────────────────
+• Your text selection stays when you move to panel
+• 1.2s cooldown prevents accidental repeats
+• Works on mobile too — touch gestures supported
+</textarea>
+    <div class="clip-section">
+      <div class="clip-header"><span class="clip-label">📋 AR Clipboard</span></div>
+      <div id="clip-box" class="empty">Nothing copied yet…</div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="hint"><span class="hint-icon">🖱</span><div><b>Click &amp; Hold</b> left panel → <b>COPY</b></div></div>
+    <div class="hdiv"></div>
+    <div class="hint"><span class="hint-icon">👉</span><div><b>Swipe Right</b> left panel → <b>PASTE</b></div></div>
+    <div class="hdiv"></div>
+    <div class="hint"><span class="hint-icon">📷</span><div style="color:rgba(205,228,245,.3)">Camera tab for real hand tracking</div></div>
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script>
+const panel    = document.getElementById('gesture-panel');
+const gCanvas  = document.getElementById('gesture-canvas');
+const gCtx     = gCanvas.getContext('2d');
+const badge    = document.getElementById('badge');
+const flash    = document.getElementById('panel-flash');
+const cardCopy = document.getElementById('card-copy');
+const cardPaste= document.getElementById('card-paste');
+const editor   = document.getElementById('editor');
+const clipBox  = document.getElementById('clip-box');
+const toasts   = document.getElementById('toasts');
+
+let arClipboard = '', lastActionTs = 0;
+const COOLDOWN = 1200;
+
+// ─ Toast ─
+function toast(msg, type) {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`; el.textContent = msg;
+  toasts.appendChild(el);
+  setTimeout(() => el.remove(), 2600);
+}
+
+// ─ Clipboard ─
+function setClip(text) {
+  arClipboard = text;
+  clipBox.classList.remove('empty','pop');
+  if (!text) { clipBox.textContent = 'Nothing copied yet…'; clipBox.classList.add('empty'); return; }
+  clipBox.textContent = `"${text.length > 80 ? text.slice(0,80)+'…' : text}"`;
+  void clipBox.offsetWidth; clipBox.classList.add('pop');
+  setTimeout(() => clipBox.classList.remove('pop'), 700);
+}
+
+// ─ Actions ─
+function doCopy() {
+  let text = '';
+  const s = editor.selectionStart, e = editor.selectionEnd;
+  if (s !== e) text = editor.value.substring(s,e);
+  else { const sel = window.getSelection(); if (sel) text = sel.toString(); }
+  if (!text) { toast('⚠ Select text in the editor first!', 'tp'); return; }
+  setClip(text);
+  navigator.clipboard?.writeText(text).catch(()=>{});
+  toast('🤏 COPIED — ' + (text.length > 30 ? text.slice(0,30)+'…' : `"${text}"`), 'tc');
+  doFlash('copy-flash'); showBadge('🤏 COPIED!', false);
+  cardCopy.classList.add('lit'); setTimeout(()=>cardCopy.classList.remove('lit'),900);
+}
+function doPaste() {
+  if (!arClipboard) { toast('⚠ Nothing in AR clipboard!', 'tp'); return; }
+  const s = editor.selectionStart ?? editor.value.length;
+  const e = editor.selectionEnd ?? s;
+  editor.value = editor.value.substring(0,s) + arClipboard + editor.value.substring(e);
+  editor.selectionStart = editor.selectionEnd = s + arClipboard.length;
+  editor.focus();
+  toast('✋ PASTED!', 'tp'); doFlash('paste-flash'); showBadge('✋ PASTED!', true);
+  cardPaste.classList.add('lit'); setTimeout(()=>cardPaste.classList.remove('lit'),900);
+}
+function tryAction(type) {
+  const now = Date.now();
+  if (now - lastActionTs < COOLDOWN) return;
+  lastActionTs = now;
+  type === 'copy' ? doCopy() : doPaste();
+}
+function doFlash(cls) { flash.className=cls; setTimeout(()=>flash.className='',600); }
+
+let badgeTimer;
+function showBadge(msg, paste) {
+  badge.textContent = msg;
+  badge.className = 'show' + (paste?' paste-mode':'');
+  clearTimeout(badgeTimer);
+  badgeTimer = setTimeout(()=>badge.className='',1800);
+}
+
+// ─ Canvas ─
+let mouseX=-999, mouseY=-999, cursorVisible=false;
+let holdStart=null, holdTriggered=false;
+let swipeStartX=null, swipeStartY=null, swipeTriggered=false;
+let particles=[], trail=[];
+
+function resizeCanvas(){ gCanvas.width=panel.offsetWidth; gCanvas.height=panel.offsetHeight; }
+resizeCanvas(); window.addEventListener('resize', resizeCanvas);
+
+panel.addEventListener('mouseenter', ()=>cursorVisible=true);
+panel.addEventListener('mouseleave', ()=>{
+  cursorVisible=false; holdStart=null; holdTriggered=false;
+  swipeStartX=null; swipeTriggered=false;
+});
+panel.addEventListener('mousemove', e=>{
+  const r=panel.getBoundingClientRect();
+  mouseX=e.clientX-r.left; mouseY=e.clientY-r.top;
+  trail.push({x:mouseX,y:mouseY}); if(trail.length>30) trail.shift();
+  if(swipeStartX!==null){
+    const dx=mouseX-swipeStartX;
+    if(!swipeTriggered && dx>90 && Math.abs(mouseY-swipeStartY)<70){
+      swipeTriggered=true; swipeStartX=null;
+      spawnParticles(mouseX,mouseY,'paste'); tryAction('paste');
+    }
+  }
+});
+panel.addEventListener('mousedown', e=>{
+  if(e.button!==0) return;
+  swipeStartX=mouseX; swipeStartY=mouseY; swipeTriggered=false;
+  holdStart=Date.now(); holdTriggered=false;
+});
+panel.addEventListener('mouseup', ()=>{ holdStart=null; holdTriggered=false; swipeStartX=null; });
+
+function spawnParticles(x,y,type){
+  const col=type==='copy'?'#00ffe7':'#a259ff';
+  for(let i=0;i<18;i++){
+    const a=(Math.PI*2/18)*i+Math.random()*.3, sp=2.5+Math.random()*3.5;
+    particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,alpha:1,r:3+Math.random()*4,col,decay:.025+Math.random()*.02});
+  }
+}
+
+function drawLoop(){
+  requestAnimationFrame(drawLoop);
+  gCtx.clearRect(0,0,gCanvas.width,gCanvas.height);
+
+  // Trail
+  for(let i=0;i<trail.length;i++){
+    const t=trail[i], a=(i/trail.length)*.3;
+    gCtx.beginPath(); gCtx.arc(t.x,t.y,2.5*(i/trail.length),0,Math.PI*2);
+    gCtx.fillStyle=`rgba(0,255,231,${a})`; gCtx.fill();
+  }
+
+  // Cursor
+  if(cursorVisible){
+    const pulse=.7+Math.sin(Date.now()/260)*.3;
+    gCtx.beginPath(); gCtx.arc(mouseX,mouseY,7*pulse,0,Math.PI*2);
+    gCtx.strokeStyle='rgba(0,255,231,0.8)'; gCtx.lineWidth=1.5; gCtx.stroke();
+    gCtx.beginPath(); gCtx.arc(mouseX,mouseY,2,0,Math.PI*2);
+    gCtx.fillStyle='#00ffe7'; gCtx.fill();
+  }
+
+  // Hold ring
+  if(holdStart!==null && !holdTriggered){
+    const p=Math.min((Date.now()-holdStart)/800,1);
+    gCtx.beginPath(); gCtx.arc(mouseX,mouseY,24,0,Math.PI*2);
+    gCtx.strokeStyle='rgba(0,255,231,0.1)'; gCtx.lineWidth=3; gCtx.stroke();
+    gCtx.beginPath(); gCtx.arc(mouseX,mouseY,24,-Math.PI/2,-Math.PI/2+p*Math.PI*2);
+    gCtx.strokeStyle=`rgba(0,255,231,${.4+p*.6})`; gCtx.lineWidth=3; gCtx.stroke();
+    if(p>=1){ holdTriggered=true; holdStart=null; spawnParticles(mouseX,mouseY,'copy'); tryAction('copy'); }
+  }
+
+  // Swipe arrow
+  if(swipeStartX!==null){
+    const dx=mouseX-swipeStartX;
+    if(dx>10){
+      gCtx.beginPath(); gCtx.moveTo(swipeStartX,swipeStartY); gCtx.lineTo(mouseX,mouseY);
+      gCtx.strokeStyle=`rgba(162,89,255,${Math.min(dx/100,.8)})`;
+      gCtx.lineWidth=2; gCtx.setLineDash([6,4]); gCtx.stroke(); gCtx.setLineDash([]);
+      const ang=Math.atan2(mouseY-swipeStartY,mouseX-swipeStartX);
+      gCtx.beginPath(); gCtx.moveTo(mouseX,mouseY);
+      gCtx.lineTo(mouseX-10*Math.cos(ang-.4),mouseY-10*Math.sin(ang-.4));
+      gCtx.lineTo(mouseX-10*Math.cos(ang+.4),mouseY-10*Math.sin(ang+.4));
+      gCtx.closePath(); gCtx.fillStyle=`rgba(162,89,255,${Math.min(dx/100,.8)})`; gCtx.fill();
+    }
+  }
+
+  // Particles
+  particles=particles.filter(p=>p.alpha>.02);
+  for(const p of particles){
+    gCtx.beginPath(); gCtx.arc(p.x,p.y,p.r*p.alpha,0,Math.PI*2);
+    gCtx.fillStyle=p.col+Math.round(p.alpha*255).toString(16).padStart(2,'0'); gCtx.fill();
+    p.x+=p.vx; p.y+=p.vy; p.vx*=.92; p.vy*=.92; p.alpha-=p.decay;
+  }
+}
+drawLoop();
+
+// Touch support
+panel.addEventListener('touchstart', e=>{
+  const t=e.touches[0], r=panel.getBoundingClientRect();
+  mouseX=t.clientX-r.left; mouseY=t.clientY-r.top;
+  swipeStartX=mouseX; swipeStartY=mouseY; swipeTriggered=false;
+  holdStart=Date.now(); holdTriggered=false; cursorVisible=true;
+},{passive:true});
+panel.addEventListener('touchmove', e=>{
+  const t=e.touches[0], r=panel.getBoundingClientRect();
+  mouseX=t.clientX-r.left; mouseY=t.clientY-r.top;
+  trail.push({x:mouseX,y:mouseY}); if(trail.length>30) trail.shift();
+  const dx=mouseX-swipeStartX;
+  if(!swipeTriggered && dx>80 && Math.abs(mouseY-swipeStartY)<70){
+    swipeTriggered=true; swipeStartX=null;
+    spawnParticles(mouseX,mouseY,'paste'); tryAction('paste');
+  }
+},{passive:true});
+panel.addEventListener('touchend',()=>{ holdStart=null; holdTriggered=false; swipeStartX=null; cursorVisible=false; });
+
+// ─ Mode switching ─
+function setMode(m){
+  document.getElementById('tab-mouse').className='mode-tab'+(m==='mouse'?' active':'');
+  document.getElementById('tab-cam').className  ='mode-tab'+(m==='cam'?' active':'');
+  document.getElementById('cam-view').style.display = m==='cam'?'block':'none';
+  document.getElementById('instruction-cards').style.opacity = m==='cam'?'0':'1';
+  document.getElementById('s-mode').textContent = m==='cam'?'CAM MODE':'MOUSE MODE';
+}
+
+// ─ Camera ─
+function closeCamModal(){ document.getElementById('cam-modal').classList.remove('show'); }
+
+async function requestCamera(){
+  // If opened as file://, camera will NEVER prompt — show help immediately
+  if(location.protocol==='file:'){
+    document.getElementById('cam-steps').innerHTML=
+      `<b>⚠ Opened as a local file</b><br>Browsers block camera on <b>file://</b> without prompting.<br><br>
+       To enable camera:<br>
+       • Drag this file into <b>Firefox</b> (works on local files)<br>
+       • Or run: <code>python -m http.server 8080</code><br>
+       &nbsp;&nbsp;then open <b>localhost:8080</b> in any browser<br><br>
+       Meanwhile, <b>Mouse Mode</b> works perfectly right now! 🖱`;
+    document.getElementById('cam-modal').classList.add('show');
+    return;
+  }
+  await startCamera();
+}
+
+async function startCamera(){
+  closeCamModal();
+  // Show a "requesting…" indicator
+  document.getElementById('tab-cam').textContent='📷 Requesting…';
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({video:{width:1280,height:720,facingMode:'user'}});
+    const video  = document.getElementById('cam-video');
+    video.srcObject=stream; await video.play();
+    document.getElementById('tab-cam').textContent='📷 Camera';
+    setMode('cam');
+
+    const cc=document.getElementById('cam-canvas'), cctx=cc.getContext('2d');
+    const hands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
+    hands.setOptions({maxNumHands:1,modelComplexity:1,minDetectionConfidence:.7,minTrackingConfidence:.55});
+    let lastG=null, lastGTs=0;
+    hands.onResults(res=>{
+      cc.width=video.videoWidth||640; cc.height=video.videoHeight||480;
+      cctx.clearRect(0,0,cc.width,cc.height);
+      if(!res.multiHandLandmarks?.length){ document.getElementById('s-hand').textContent='NO HAND'; return; }
+      document.getElementById('s-hand').textContent='HAND DETECTED';
+      const lm=res.multiHandLandmarks[0];
+      drawConnectors(cctx,lm,HAND_CONNECTIONS,{color:'rgba(0,255,231,0.4)',lineWidth:1.5});
+      drawLandmarks(cctx,lm,{color:'rgba(0,255,231,0.9)',fillColor:'rgba(0,0,0,0.4)',lineWidth:1,radius:d=>(d.index===4||d.index===8)?7:3});
+      const det=detectHand(lm), now=Date.now();
+      if(det&&det.conf>.75&&now-lastGTs>COOLDOWN){
+        if(det.name!==lastG||now-lastGTs>COOLDOWN*2){ lastG=det.name; lastGTs=now; tryAction(det.name==='PINCH'?'copy':'paste'); }
+      }
+    });
+    const camera=new Camera(video,{onFrame:async()=>{await hands.send({image:video});},width:1280,height:720});
+    camera.start();
+  } catch(e){
+    document.getElementById('tab-cam').textContent='📷 Camera';
+    // Show specific help based on error
+    const ua=navigator.userAgent;
+    let steps='';
+    if(e.name==='NotAllowedError'||e.name==='PermissionDeniedError'){
+      if(/Chrome/.test(ua)&&!/Edg/.test(ua))
+        steps=`<b>Chrome:</b> Click the 🔒 lock icon in address bar → Camera → <b>Allow</b> → reload page`;
+      else if(/Firefox/.test(ua))
+        steps=`<b>Firefox:</b> Click the camera icon in the address bar → <b>Allow</b>`;
+      else if(/Safari/.test(ua))
+        steps=`<b>Safari:</b> Safari menu → Settings for This Website → Camera → <b>Allow</b>`;
+      else
+        steps=`Click the 🔒 lock or camera icon in address bar → set Camera to <b>Allow</b>`;
+      document.getElementById('cam-steps').innerHTML=`<b>Permission was denied.</b><br><br>${steps}<br><br>Mouse Mode still works perfectly in the meantime! 🖱`;
+    } else {
+      document.getElementById('cam-steps').innerHTML=`<b>Camera unavailable</b> (${e.name})<br><br>No camera hardware found, or it's in use by another app.<br><br>Mouse Mode works without any camera! 🖱`;
+    }
+    document.getElementById('cam-modal').classList.add('show');
+    toast('Camera unavailable — Mouse mode active','tp');
+  }
+}
+
+function detectHand(lm){
+  const d=(a,b)=>Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2), sc=d(lm[0],lm[9])||.1;
+  const pinch=d(lm[4],lm[8])/sc;
+  if(pinch<.35) return{name:'PINCH',conf:Math.min(1,(.35-pinch)/.35)};
+  const ext=[[8,6,5],[12,10,9],[16,14,13],[20,18,17]].filter(([t,p,m])=>lm[t].y<lm[p].y&&lm[p].y<lm[m].y).length;
+  if(ext>=4) return{name:'OPEN',conf:ext/4};
+  return null;
+}
+</script>
+</body>
+</html>
