@@ -33,7 +33,7 @@ body::before{
     linear-gradient(90deg,rgba(0,229,176,.012) 1px,transparent 1px);
   background-size:54px 54px;
 }
-
+ 
 /* ═══════════════════════════════════
    APP SHELL  — header + two-col body
 ═══════════════════════════════════ */
@@ -64,7 +64,7 @@ header{
 .dg{background:var(--g);box-shadow:0 0 5px var(--g)}
 .dp{background:var(--pu);box-shadow:0 0 5px var(--pu)}
 .dy{background:var(--y);box-shadow:0 0 5px var(--y)}
-
+ 
 /* two-col body */
 #body{
   flex:1;
@@ -73,7 +73,7 @@ header{
   flex-direction:row;
   overflow:hidden;
 }
-
+ 
 /* ═══════════════════════════════════
    LEFT — EDITOR
 ═══════════════════════════════════ */
@@ -97,7 +97,7 @@ header{
 .panel-tag{font-family:'Share Tech Mono',monospace;font-size:.54rem;letter-spacing:.07em;
   padding:2px 7px;border-radius:100px;border:1px solid rgba(168,85,247,.22);
   color:var(--pu);background:rgba(168,85,247,.06)}
-
+ 
 #dz{flex:1;position:relative;overflow:hidden;transition:background .18s}
 #dz.over{background:rgba(0,229,176,.03)}
 #dz.over::after{
@@ -117,7 +117,7 @@ header{
   -webkit-overflow-scrolling:touch;
 }
 #ed::selection{background:rgba(0,229,176,.14)}
-
+ 
 /* ═══════════════════════════════════
    RIGHT — three stacked sections
 ═══════════════════════════════════ */
@@ -130,7 +130,7 @@ header{
   background:var(--sur);
   overflow:hidden;
 }
-
+ 
 /* ── CAM SECTION ── */
 #cam-section{
   flex-shrink:0;
@@ -138,7 +138,7 @@ header{
   border-bottom:1px solid var(--bd);
   gap:0;
 }
-
+ 
 /* on/off toggle column */
 #cam-ctrl{
   flex-shrink:0;width:52px;
@@ -168,7 +168,7 @@ header{
   writing-mode:vertical-rl;text-orientation:mixed;
   transform:rotate(180deg);opacity:.6;
 }
-
+ 
 /* video area */
 #cam-view{
   flex:1;position:relative;
@@ -249,7 +249,7 @@ header{
   color:rgba(0,229,176,.4);letter-spacing:.1em}
 #ctrack{width:60px;height:2px;background:rgba(0,229,176,.1);border-radius:100px;overflow:hidden}
 #cfill{height:100%;background:var(--g);border-radius:100px;transition:width .1s,background .2s}
-
+ 
 /* ── ROOM CONTROLS ── */
 #room-section{
   flex-shrink:0;
@@ -293,7 +293,7 @@ header{
 }
 #jinp:focus{border-color:rgba(0,229,176,.4)}
 #jinp::placeholder{color:rgba(204,228,245,.2);font-size:.65rem;letter-spacing:.08em}
-
+ 
 /* send row */
 .send-row{
   display:flex;align-items:stretch;gap:6px;
@@ -318,7 +318,7 @@ header{
   -webkit-appearance:none;
 }
 #sendbtn:hover,#sendbtn:active{background:rgba(0,229,176,.16)}
-
+ 
 /* ── CLIPBOARD SECTION ── */
 #clip-section{
   flex:1;overflow:hidden;
@@ -349,7 +349,7 @@ header{
   padding:20px;line-height:1.65;
 }
 #empty .eico{font-size:1.6rem;opacity:.22}
-
+ 
 /* CARDS */
 .card{
   background:rgba(16,22,40,.9);border:1px solid var(--bd);border-radius:10px;
@@ -384,7 +384,7 @@ header{
 .dh{position:absolute;top:8px;right:8px;font-size:.6rem;opacity:0;color:var(--sub);
   transition:opacity .2s;pointer-events:none}
 .card:hover .dh{opacity:.4}
-
+ 
 /* ═══════════════════════════════════
    GESTURE CURSOR (floats over editor)
 ═══════════════════════════════════ */
@@ -433,7 +433,7 @@ header{
   border:1.5px solid currentColor;
   animation:gcripple .5s ease forwards;pointer-events:none;
 }
-
+ 
 /* DRAG GHOST */
 #gdrag-ghost{
   position:fixed;z-index:9990;pointer-events:none;display:none;
@@ -448,7 +448,7 @@ header{
 #gdrag-ghost::before{
   content:'✊ ';font-size:.8rem;
 }
-
+ 
 /* GESTURE HUD (inside right panel, below cam) */
 #ghud{
   flex-shrink:0;padding:6px 8px;
@@ -469,10 +469,10 @@ header{
 .gr.on-p { color:var(--pu);background:rgba(168,85,247,.08);border-color:rgba(168,85,247,.18) }
 .gr-ico{font-size:.85rem;flex-shrink:0}
 .gr-txt b{display:block;font-size:.48rem;color:inherit;opacity:.7}
-
+ 
 /* textarea selection glow */
 #ed.gesture-selecting{box-shadow:inset 0 0 0 2px rgba(245,158,11,.3)}
-
+ 
 /* ═══════════════════════════════════
    TOASTS
 ═══════════════════════════════════ */
@@ -494,7 +494,7 @@ header{
 @keyframes tout{to{opacity:0;transform:translateY(4px)}}
 @keyframes pulse{0%,100%{opacity:.32}50%{opacity:1}}
 .syncing{animation:pulse .9s ease infinite}
-
+ 
 /* ═══════════════════════════════════
    MOBILE BLOCKER
 ═══════════════════════════════════ */
@@ -540,11 +540,11 @@ header{
   font-family:'Share Tech Mono',monospace;font-size:.6rem;
   letter-spacing:.1em;color:rgba(204,228,245,.25);
 }
-
+ 
 @media(max-width:900px){
   #mob-block{display:flex}
 }
-
+ 
 /* hidden on desktop */
 #mobtabs{display:none}
 </style>
@@ -552,7 +552,7 @@ header{
 <body>
 <div id="toasts"></div>
 <div id="gdrag-ghost"></div>
-
+ 
 <!-- MOBILE BLOCKER -->
 <div id="mob-block">
   <div class="mb-icon">🖥️</div>
@@ -564,7 +564,7 @@ header{
   </div>
   <span class="mb-hint">WORKS BEST ON LAPTOP OR DESKTOP</span>
 </div>
-
+ 
 <div id="app">
   <!-- HEADER -->
   <header>
@@ -578,10 +578,10 @@ header{
       <div class="stat"><div class="dot" id="dsync"></div><span id="ssync">SYNC</span></div>
     </div>
   </header>
-
+ 
   <!-- BODY -->
   <div id="body">
-
+ 
     <!-- LEFT: EDITOR -->
     <div id="left" class="mob-active">
       <div class="panel-head">
@@ -590,14 +590,14 @@ header{
       </div>
       <div id="dz">
         <textarea id="ed" spellcheck="false">← Drag clipboard cards here to paste.
-
+ 
 Gesture controls (enable camera first):
 🤏 Pinch        — place cursor in editor
 ☝️  Point + hold — select text
 ✊ Fist          — copy selection
 ✊ Fist + hold   — drag a clipboard card
 ✋ Palm          — paste at cursor
-
+ 
 Try selecting this line and using gestures:
 The quick brown fox jumps over the lazy dog.
 Pack my box with five dozen liquor jugs.
@@ -605,10 +605,10 @@ Pack my box with five dozen liquor jugs.
         <div id="gcursor"></div>
       </div>
     </div>
-
+ 
     <!-- RIGHT: CAMERA + CONTROLS + CLIPBOARD -->
     <div id="right">
-
+ 
       <!-- CAM SECTION: toggle button + video feed side by side -->
       <div id="cam-section">
         <!-- On/Off toggle column -->
@@ -641,7 +641,7 @@ Pack my box with five dozen liquor jugs.
           <div id="gpill">🤏 PINCH → SEND</div>
         </div>
       </div>
-
+ 
       <!-- GESTURE HUD -->
       <div id="ghud">
         <div class="gr" id="gr-pinch"><span class="gr-ico">🤏</span><span class="gr-txt">Pinch<b>Place cursor</b></span></div>
@@ -650,7 +650,7 @@ Pack my box with five dozen liquor jugs.
         <div class="gr" id="gr-grab"><span class="gr-ico">✊</span><span class="gr-txt">Fist+hold<b>Drag card</b></span></div>
         <div class="gr" id="gr-palm"><span class="gr-ico">✋</span><span class="gr-txt">Palm<b>Paste here</b></span></div>
       </div>
-
+ 
       <!-- ROOM CONTROLS -->
       <div id="room-section">
         <!-- Row 1: Room code + copy -->
@@ -673,7 +673,7 @@ Pack my box with five dozen liquor jugs.
           <button id="sendbtn" onclick="sendTyped()">⬆ Send</button>
         </div>
       </div>
-
+ 
       <!-- CLIPBOARD -->
       <div id="clip-section">
         <div id="clip-head">
@@ -692,10 +692,10 @@ Pack my box with five dozen liquor jugs.
           </div>
         </div>
       </div>
-
+ 
     </div><!-- /#right -->
   </div><!-- /#body -->
-
+ 
   <!-- MOBILE TAB BAR -->
   <nav id="mobtabs">
     <button class="mbt on" id="tab-ed" onclick="mobTab('ed')">
@@ -706,7 +706,7 @@ Pack my box with five dozen liquor jugs.
     </button>
   </nav>
 </div>
-
+ 
 <script>
 // ── ELEMENTS ──
 const camvid   = document.getElementById('camvid');
@@ -732,14 +732,14 @@ const icount   = document.getElementById('icount');
 const toasts   = document.getElementById('toasts');
 const dz       = document.getElementById('dz');
 const rcodeEl  = document.getElementById('rcode');
-
+ 
 let roomCode='', deviceId='', roomRef=null;
 let items={}, pillTimer=null, lastGTs=0, lastG=null;
 let camStream=null, camRunning=false;
 const COOL=1500, MAX=25;
-
+ 
 const gun = GUN(['https://gun-manhattan.herokuapp.com/gun','https://gun-us.herokuapp.com/gun']);
-
+ 
 // ── HELPERS ──
 function rand(n){ return Math.random().toString(36).substring(2,2+n).toUpperCase(); }
 function esc(s){ const d=document.createElement('div');d.textContent=s;return d.innerHTML; }
@@ -753,7 +753,7 @@ function toast(msg,cls='tg2'){
   el.className='toast '+cls; el.textContent=msg;
   toasts.appendChild(el); setTimeout(()=>el.remove(),2700);
 }
-
+ 
 // ── MOBILE TABS ──
 function mobTab(t){
   const left=document.getElementById('left');
@@ -770,7 +770,7 @@ function mobTab(t){
     document.getElementById('tab-ed').classList.remove('on');
   }
 }
-
+ 
 // ── ROOM ──
 function setupRoom(code){
   if(roomRef) roomRef.off();
@@ -792,13 +792,13 @@ function setupRoom(code){
   });
   setTimeout(()=>dsync.className='dot dy',1500);
 }
-
+ 
 function newRoom(){
   if(Object.keys(items).length>0&&!confirm('Create new room?')) return;
   setupRoom(rand(6));
   toast('🔑 New room created','ty2');
 }
-
+ 
 function joinRoom(){
   const v=document.getElementById('jinp').value.trim().toUpperCase();
   if(v.length<4){ toast('Enter a valid code','tpu'); return; }
@@ -806,12 +806,12 @@ function joinRoom(){
   setupRoom(v);
   toast('🔗 Joined room '+v,'ty2');
 }
-
+ 
 function copyCode(){
   navigator.clipboard?.writeText(roomCode).catch(()=>{});
   toast('Copied: '+roomCode,'ty2');
 }
-
+ 
 // ── SEND ──
 function sendItem(text){
   if(!text||!text.trim()) return;
@@ -820,7 +820,7 @@ function sendItem(text){
   dsync.className='dot dy syncing';
   setTimeout(()=>dsync.className='dot dy',800);
 }
-
+ 
 function sendTyped(){
   const v=document.getElementById('sendinp').value.trim();
   if(!v){ toast('Type something first','tpu'); return; }
@@ -828,14 +828,14 @@ function sendTyped(){
   document.getElementById('sendinp').value='';
   toast('⬆ Sent to all devices','tg2');
 }
-
+ 
 // ── RENDER ──
 function renderEmpty(){
   const list=Object.values(items).filter(i=>i.text&&!i._del);
   emptyEl.style.display=list.length?'none':'flex';
   icount.textContent=list.length+' item'+(list.length===1?'':'s');
 }
-
+ 
 function renderCards(newKey,isRemoteNew){
   const list=Object.values(items).filter(i=>i.text&&!i._del).sort((a,b)=>b.ts-a.ts).slice(0,MAX);
   emptyEl.style.display=list.length?'none':'flex';
@@ -854,7 +854,7 @@ function renderCards(newKey,isRemoteNew){
     if(!items[id]||items[id]._del||!items[id].text) el.remove();
   });
 }
-
+ 
 function makeCard(item){
   const card=document.createElement('div');
   const isMe=item.device===deviceId;
@@ -877,14 +877,14 @@ function makeCard(item){
   card.addEventListener('dragend',()=>card.classList.remove('dragging'));
   return card;
 }
-
+ 
 function pasteItem(id){
   const item=items[id];
   if(!item) return;
   pasteToEditor(item.text);
   if(isMob()) mobTab('ed');
 }
-
+ 
 function deleteItem(id){
   const item=items[id];
   if(!item) return;
@@ -893,7 +893,7 @@ function deleteItem(id){
   cardsEl.querySelector('[data-id="'+id+'"]')?.remove();
   renderEmpty();
 }
-
+ 
 function clearAll(){
   if(!Object.keys(items).length) return;
   if(!confirm('Clear all items in room '+roomCode+'?')) return;
@@ -902,7 +902,7 @@ function clearAll(){
   });
   items={}; cardsEl.querySelectorAll('.card').forEach(c=>c.remove()); renderEmpty();
 }
-
+ 
 // ── DRAG & DROP ──
 dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over')});
 dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
@@ -911,7 +911,7 @@ dz.addEventListener('drop',e=>{
   const t=e.dataTransfer.getData('text/plain');
   if(t) pasteToEditor(t);
 });
-
+ 
 function pasteToEditor(text){
   const s=ed.selectionStart??ed.value.length;
   const e2=ed.selectionEnd??s;
@@ -922,320 +922,325 @@ function pasteToEditor(text){
   setTimeout(()=>dz.style.background='',500);
   toast('✋ Pasted!','tpu');
 }
-
-// ══════════════════════════════════════
-// GESTURE POINTER SYSTEM — 5 gestures
-// ══════════════════════════════════════
+ 
+// ══════════════════════════════════════════════
+// GESTURE ENGINE  — rebuilt
+// 🤏 Pinch   → place cursor
+// ☝️  Point   → select text (hold & move)
+// ✊ Fist    → copy selection
+// ✌️  2-finger → drag card (hold 700ms, then drop)
+// ✋ Palm    → paste at cursor
+// ══════════════════════════════════════════════
 const gcursor    = document.getElementById('gcursor');
 const gdragGhost = document.getElementById('gdrag-ghost');
-
-// HUD rows
-const gr = {
+ 
+// HUD
+const grEls = {
   pinch: document.getElementById('gr-pinch'),
   point: document.getElementById('gr-point'),
   fist:  document.getElementById('gr-fist'),
   grab:  document.getElementById('gr-grab'),
   palm:  document.getElementById('gr-palm'),
 };
-const GR_COLOR = { pinch:'on-g', point:'on-y', fist:'on-r', grab:'on-y', palm:'on-p' };
-
-function setHud(active) {
-  Object.entries(gr).forEach(([k,el])=>{
-    if(el) el.className = 'gr' + (k===active ? ' '+GR_COLOR[k] : '');
+const GR_COL = {pinch:'on-g',point:'on-y',fist:'on-r',grab:'on-y',palm:'on-p'};
+function setHud(k){
+  Object.entries(grEls).forEach(([n,el])=>{
+    if(el) el.className='gr'+(n===k?' '+GR_COL[n]:'');
   });
 }
-
+ 
 // State
-let gState      = 'NONE';
-let gHoldStart  = 0;
-let gCaretPos   = 0;       // last cursor pos from pinch
-let gSelectAnchor = -1;    // char offset where POINT selection started
-let gDragId     = null;    // id of card being gesture-dragged
-const G_DRAG_MS = 850;     // hold time to trigger drag
-
-// ── MAP hand landmark to editor screen coords ──
-function tipToScreen(tip) {
-  const r = ed.getBoundingClientRect();
-  // Camera is mirrored → flip x
-  return {
-    x: r.left + (1 - tip.x) * r.width,
-    y: r.top  + tip.y        * r.height,
-  };
-}
-
-// ── Place textarea caret at screen position ──
-function placeCaretAt(x, y) {
-  const r = ed.getBoundingClientRect();
-  if (x < r.left || x > r.right || y < r.top || y > r.bottom) return;
-  ed.focus();
-  ed.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,clientX:x,clientY:y}));
-  gCaretPos = ed.selectionStart;
-}
-
-// ── Extend selection from anchor to current pointer pos ──
-function extendSelection(x, y) {
-  if (gSelectAnchor < 0) return;
-  const r = ed.getBoundingClientRect();
-  const cx = Math.max(r.left+1, Math.min(r.right-1, x));
-  const cy = Math.max(r.top+1,  Math.min(r.bottom-1, y));
-  ed.focus();
-  // Temporarily click to get offset
-  ed.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,clientX:cx,clientY:cy}));
-  const endPos = ed.selectionStart;
-  const s = Math.min(gSelectAnchor, endPos);
-  const e = Math.max(gSelectAnchor, endPos);
-  ed.setSelectionRange(s, e);
-}
-
-// ── Visual cursor over editor ──
-function moveCursor(x, y, cls) {
-  const r = ed.getBoundingClientRect();
-  if (!r.width) { gcursor.className=''; return; }
-  const lx = Math.max(0, Math.min(r.width,  x - r.left));
-  const ly = Math.max(0, Math.min(r.height, y - r.top));
-  gcursor.style.left = lx + 'px';
-  gcursor.style.top  = ly + 'px';
-  gcursor.className  = cls;
-}
-
-// ── Ripple on gesture trigger ──
-function rippleCursor() {
-  const rp = document.createElement('div');
-  rp.className = 'gc-ripple';
-  gcursor.appendChild(rp);
-  setTimeout(() => rp.remove(), 600);
-}
-
-// ── Find card element at screen point ──
-function cardAtPoint(x, y) {
-  const els = document.elementsFromPoint(x, y);
-  for (const el of els) {
-    const c = el.closest?.('.card');
-    if (c?.dataset.id) return c.dataset.id;
-  }
-  return null;
-}
-
-// ── Start dragging a card ──
-function startDrag(id, x, y) {
-  const item = items[id];
-  if (!item) return;
-  gDragId = id;
-  gdragGhost.textContent = item.text.slice(0,40) + (item.text.length>40?'…':'');
-  gdragGhost.classList.add('show');
-  gdragGhost.style.left = x+'px';
-  gdragGhost.style.top  = y+'px';
-  showPill('✊ DRAG TO EDITOR',false);
-}
-
-// ── End drag ──
-function endDrag(x, y) {
-  const item = gDragId ? items[gDragId] : null;
-  gdragGhost.classList.remove('show');
-  if (item) {
-    const r = ed.getBoundingClientRect();
-    if (x>=r.left && x<=r.right && y>=r.top && y<=r.bottom) {
-      placeCaretAt(x, y);
-      pasteToEditor(item.text);
-      toast('✊ Dropped!','ty2');
-    } else {
-      toast('✊ Drag cancelled','ty2');
-    }
-  }
-  gDragId = null;
-}
-
-// ── COPY ──
-function gestCopy() {
-  const s = ed.selectionStart, e2 = ed.selectionEnd;
-  const text = s !== e2 ? ed.value.substring(s,e2) : (window.getSelection()?.toString()||'');
-  if (!text) { toast('⚠ Select text first (☝️ gesture)','tpu'); return; }
-  sendItem(text);
-  doFlash('fg');
-  showPill('✊ COPIED + SENT!',false);
-  toast('✊ Copied to room','tg2');
-}
-
-// ── PASTE ──
-function gestPaste() {
-  const latest = Object.values(items).filter(i=>i.text&&!i._del).sort((a,b)=>b.ts-a.ts)[0];
-  if (!latest) { toast('⚠ Nothing in clipboard','tpu'); return; }
-  pasteToEditor(latest.text);
-  doFlash('fp');
-  showPill('✋ PASTED!',true);
-}
-
-function doFlash(c){ camflash.className=c; setTimeout(()=>camflash.className='',550); }
-function showPill(msg,p){
-  gpill.textContent=msg; gpill.className='show'+(p?' pp':'');
-  clearTimeout(pillTimer); pillTimer=setTimeout(()=>{gpill.className='';pillTimer=null;},1800);
-}
-
-// ══════════════════════════════════════
-// GESTURE DETECTION — 5 shapes
-// ══════════════════════════════════════
+let gStable    = 'NONE';
+let gBuf       = [];
+let gHoldStart = 0;
+let gCaretPos  = 0;
+let gSelAnchor = -1;
+let gDragId    = null;
+let gDragLive  = false;
+const BUF_LEN      = 3;    // frames to confirm gesture
+const HOLD_DRAG_MS = 700;  // hold two-finger this long to grab card
+ 
+// ── Distance ──
 function dist(a,b){ return Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2); }
-
-function detect(lm) {
-  const sc = dist(lm[0], lm[9]) || 0.1;
-
-  // 1) PINCH 🤏: thumb tip + index tip close
-  const pd = dist(lm[4], lm[8]) / sc;
-  if (pd < 0.32) return { name:'PINCH', conf:Math.min(1,(0.32-pd)/0.32), tip:lm[8] };
-
-  // Finger extension: tip.y < pip.y means finger is up
-  const ext = [
+ 
+// ── Classify raw gesture from landmarks ──
+function classifyGesture(lm){
+  const sc = dist(lm[0],lm[9])||0.1;
+ 
+  // PINCH: thumb tip close to index tip
+  if(dist(lm[4],lm[8])/sc < 0.35)
+    return {name:'PINCH', tip:lm[8]};
+ 
+  // Finger up = tip above middle knuckle (pip)
+  const up=[
     lm[8].y  < lm[6].y,   // index
     lm[12].y < lm[10].y,  // middle
     lm[16].y < lm[14].y,  // ring
     lm[20].y < lm[18].y,  // pinky
   ];
-  const n = ext.filter(Boolean).length;
-
-  // 2) POINT ☝️: only index extended
-  if (ext[0] && !ext[1] && !ext[2] && !ext[3])
-    return { name:'POINT', conf:0.88, tip:lm[8] };
-
-  // 3) PALM ✋: all 4 extended
-  if (n >= 4)
-    return { name:'PALM', conf:n/4, tip:lm[9] };
-
-  // 4) FIST ✊: all 4 curled
-  if (n === 0)
-    return { name:'FIST', conf:0.85, tip:lm[9] };
-
-  return null;
+ 
+  if( up[0] && !up[1] && !up[2] && !up[3]) return {name:'POINT',     tip:lm[8]};
+  if( up[0] &&  up[1] && !up[2] && !up[3]) return {name:'TWOFINGER', tip:lm[8]};
+  if( up[0] &&  up[1] &&  up[2] &&  up[3]) return {name:'PALM',      tip:lm[9]};
+  if(!up[0] && !up[1] && !up[2] && !up[3]) return {name:'FIST',      tip:lm[9]};
+  return {name:'NONE', tip:lm[9]};
 }
-
-// ══════════════════════════════════════
-// onResults — hand tracking callback
-// ══════════════════════════════════════
-function onResults(res) {
-  hcvs.width  = camvid.videoWidth  || hcvs.offsetWidth;
-  hcvs.height = camvid.videoHeight || hcvs.offsetHeight;
+ 
+// ── Map normalised hand tip → pixel coords inside editor ──
+// Camera video is CSS mirror-flipped (scaleX(-1)), so we flip x too.
+function tipToEdXY(tip){
+  const r=ed.getBoundingClientRect();
+  return {
+    x: r.left + (1-tip.x)*r.width,
+    y: r.top  +   tip.y  *r.height,
+  };
+}
+ 
+// ── Place textarea caret using line/char measurement ──
+function placeCaretAt(x,y){
+  const r  = ed.getBoundingClientRect();
+  const cs = getComputedStyle(ed);
+  const padT = parseFloat(cs.paddingTop)  ||16;
+  const padL = parseFloat(cs.paddingLeft) ||18;
+  const lineH= parseFloat(cs.lineHeight)  ||parseFloat(cs.fontSize)*1.82;
+  const charW= parseFloat(cs.fontSize)*0.55;
+ 
+  const lines=ed.value.split('\n');
+  const relY =y-r.top -padT;
+  const relX =x-r.left-padL;
+  const li   =Math.max(0,Math.min(lines.length-1,Math.floor(relY/lineH)));
+  const ci   =Math.max(0,Math.min(lines[li].length,Math.round(relX/charW)));
+ 
+  let pos=0;
+  for(let i=0;i<li;i++) pos+=lines[i].length+1;
+  pos+=ci;
+ 
+  ed.focus();
+  ed.setSelectionRange(pos,pos);
+  gCaretPos=pos;
+}
+ 
+// ── Extend selection from anchor to current x,y ──
+function extendSelAt(x,y){
+  if(gSelAnchor<0) return;
+  const r  = ed.getBoundingClientRect();
+  const cs = getComputedStyle(ed);
+  const padT = parseFloat(cs.paddingTop)  ||16;
+  const padL = parseFloat(cs.paddingLeft) ||18;
+  const lineH= parseFloat(cs.lineHeight)  ||parseFloat(cs.fontSize)*1.82;
+  const charW= parseFloat(cs.fontSize)*0.55;
+ 
+  const lines=ed.value.split('\n');
+  const relY =Math.max(0,y-r.top -padT);
+  const relX =Math.max(0,x-r.left-padL);
+  const li   =Math.max(0,Math.min(lines.length-1,Math.floor(relY/lineH)));
+  const ci   =Math.max(0,Math.min(lines[li].length,Math.round(relX/charW)));
+ 
+  let end=0;
+  for(let i=0;i<li;i++) end+=lines[i].length+1;
+  end+=ci;
+ 
+  const s=Math.min(gSelAnchor,end), e=Math.max(gSelAnchor,end);
+  ed.focus();
+  ed.setSelectionRange(s,e);
+}
+ 
+// ── Visual dot cursor over editor ──
+function updateCursor(x,y,cls){
+  const r=ed.getBoundingClientRect();
+  gcursor.style.left=Math.max(0,Math.min(r.width, x-r.left))+'px';
+  gcursor.style.top =Math.max(0,Math.min(r.height,y-r.top ))+'px';
+  gcursor.className =cls||'';
+}
+ 
+// ── Ripple on action ──
+function ripple(){
+  const rp=document.createElement('div');
+  rp.className='gc-ripple';
+  gcursor.appendChild(rp);
+  setTimeout(()=>rp.remove(),550);
+}
+ 
+// ── Drag helpers ──
+function startDragGhost(id,x,y){
+  const item=items[id]; if(!item) return;
+  gDragId=id; gDragLive=true;
+  gdragGhost.textContent=item.text.slice(0,40)+(item.text.length>40?'…':'');
+  gdragGhost.classList.add('show');
+  gdragGhost.style.left=x+'px'; gdragGhost.style.top=y+'px';
+  showPill('✌️ DRAG → EDITOR',false);
+}
+function moveDragGhost(x,y){
+  gdragGhost.style.left=x+'px'; gdragGhost.style.top=y+'px';
+}
+function dropDragGhost(x,y){
+  const item=gDragId?items[gDragId]:null;
+  gdragGhost.classList.remove('show');
+  if(item){
+    const r=ed.getBoundingClientRect();
+    if(x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom){
+      placeCaretAt(x,y);
+      pasteToEditor(item.text);
+      toast('✌️ Dropped!','ty2'); ripple();
+    } else {
+      toast('Drop over the editor to paste','ty2');
+    }
+  }
+  gDragId=null; gDragLive=false;
+}
+ 
+// ── Copy ──
+function gestCopy(){
+  const s=ed.selectionStart,e2=ed.selectionEnd;
+  if(s===e2){ toast('⚠ Use ☝️ to select text first','tpu'); return; }
+  const txt=ed.value.substring(s,e2);
+  sendItem(txt);
+  doFlash('fg'); showPill('✊ COPIED + SENT!',false);
+  toast('✊ Copied & sent','tg2'); ripple();
+}
+ 
+// ── Paste ──
+function gestPaste(){
+  const latest=Object.values(items).filter(i=>i.text&&!i._del).sort((a,b)=>b.ts-a.ts)[0];
+  if(!latest){ toast('⚠ Nothing in clipboard','tpu'); return; }
+  ed.focus(); ed.setSelectionRange(gCaretPos,gCaretPos);
+  pasteToEditor(latest.text);
+  doFlash('fp'); showPill('✋ PASTED!',true); ripple();
+}
+ 
+function doFlash(c){ camflash.className=c; setTimeout(()=>camflash.className='',550); }
+function showPill(msg,p){
+  gpill.textContent=msg; gpill.className='show'+(p?' pp':'');
+  clearTimeout(pillTimer); pillTimer=setTimeout(()=>{gpill.className='';pillTimer=null;},1800);
+}
+ 
+// ══════════════════════════════════════════════
+// onResults
+// ══════════════════════════════════════════════
+function onResults(res){
+  hcvs.width =camvid.videoWidth ||hcvs.offsetWidth;
+  hcvs.height=camvid.videoHeight||hcvs.offsetHeight;
   hctx.clearRect(0,0,hcvs.width,hcvs.height);
-
-  if (!res.multiHandLandmarks?.length) {
+ 
+  if(!res.multiHandLandmarks?.length){
     dhand.className='dot'; shand.textContent='HAND';
-    cwrap.className='';
-    if (!pillTimer) gpill.className='';
+    cwrap.className=''; if(!pillTimer) gpill.className='';
     gcursor.className='';
-    // Clean up if hand lost mid-gesture
-    if (gState==='POINT') { ed.classList.remove('gesture-selecting'); gSelectAnchor=-1; }
-    if (gState==='FIST' && gDragId) endDrag(-999,-999);
-    gState='NONE'; setHud(null);
+    if(gDragLive) dropDragGhost(-9999,-9999);
+    if(gStable==='POINT') ed.classList.remove('gesture-selecting');
+    gStable='NONE'; gBuf=[]; setHud(null);
     return;
   }
-
+ 
   dhand.className='dot dp'; shand.textContent='DETECTED';
-  const lm = res.multiHandLandmarks[0];
-
+  const lm=res.multiHandLandmarks[0];
+ 
   // Draw skeleton
-  drawConnectors(hctx,lm,HAND_CONNECTIONS,{color:'rgba(0,229,176,.32)',lineWidth:1.5});
-  drawLandmarks(hctx,lm,{color:'rgba(0,229,176,.85)',fillColor:'rgba(0,0,0,.4)',
-    lineWidth:1, radius:d=>(d.index===4||d.index===8)?6:3});
-
-  const det  = detect(lm);
-  const conf = det ? det.conf : 0;
-  const tip  = det ? det.tip : lm[8];
-  const { x:sx, y:sy } = tipToScreen(tip);
-  const now  = Date.now();
-  const newG = det ? det.name : 'NONE';
-
+  drawConnectors(hctx,lm,HAND_CONNECTIONS,{color:'rgba(0,229,176,.28)',lineWidth:1.5});
+  drawLandmarks(hctx,lm,{color:'rgba(0,229,176,.82)',fillColor:'rgba(0,0,0,.4)',
+    lineWidth:1,radius:d=>(d.index===4||d.index===8)?6:3});
+ 
+  const cls  = classifyGesture(lm);
+  const rawG = cls.name;
+  const tip  = cls.tip;
+ 
+  // Debounce: require BUF_LEN identical frames
+  gBuf.push(rawG);
+  if(gBuf.length>BUF_LEN) gBuf.shift();
+  if(!gBuf.every(g=>g===gBuf[0])) return;
+ 
+  const now=Date.now();
+  const {x:sx,y:sy}=tipToEdXY(tip);
+ 
   // Confidence bar
-  cwrap.className = conf > 0.18 ? 'show' : '';
-  cfill.style.width = (conf*100)+'%';
-  const barCol = {PINCH:'var(--g)',POINT:'var(--y)',FIST:'var(--r)',PALM:'var(--pu)'}[newG]||'var(--g)';
-  cfill.style.background = barCol;
-
-  // Visual cursor over editor
-  const curCls = {PINCH:'gc-pinch',POINT:'gc-point',FIST:(gDragId?'gc-grab':'gc-fist'),PALM:'gc-palm'}[newG]||'gc-none';
-  moveCursor(sx, sy, curCls);
-
-  // ── GESTURE STATE MACHINE ──
-  if (newG !== gState) {
-    const prev = gState;
-    const holdMs = now - gHoldStart;
-
-    // ── EXIT previous state ──
-    if (prev === 'POINT') {
-      ed.classList.remove('gesture-selecting');
-      gSelectAnchor = -1;
-    }
-    if (prev === 'FIST') {
-      if (gDragId) {
-        endDrag(sx, sy);
-      } else if (holdMs < G_DRAG_MS) {
-        // Quick fist release = COPY
+  cwrap.className = rawG!=='NONE'?'show':'';
+  cfill.style.width = rawG!=='NONE'?'90%':'0%';
+  cfill.style.background={PINCH:'var(--g)',POINT:'var(--y)',TWOFINGER:'var(--y)',
+    FIST:'var(--r)',PALM:'var(--pu)'}[rawG]||'var(--g)';
+ 
+  // Cursor style
+  const curCls={
+    NONE:'gc-none',PINCH:'gc-pinch',POINT:'gc-point',
+    TWOFINGER:'gc-point',FIST:'gc-fist',PALM:'gc-palm'
+  }[rawG]||'gc-none';
+  updateCursor(sx,sy,curCls);
+ 
+  const holdMs=now-gHoldStart;
+ 
+  // ── GESTURE CHANGED ──
+  if(rawG!==gStable){
+    const prev=gStable;
+    gStable=rawG;
+    gHoldStart=now;
+ 
+    // EXIT prev
+    if(prev==='POINT'){ ed.classList.remove('gesture-selecting'); gSelAnchor=-1; }
+    if(prev==='TWOFINGER'&&gDragLive) dropDragGhost(sx,sy);
+ 
+    // ENTER new
+    switch(rawG){
+      case 'PINCH':
+        placeCaretAt(sx,sy); ripple();
+        setHud('pinch'); showPill('🤏 CURSOR PLACED',false);
+        break;
+      case 'POINT':
+        gSelAnchor=gCaretPos;
+        ed.classList.add('gesture-selecting');
+        setHud('point'); showPill('☝️ HOLD & MOVE TO SELECT',false);
+        break;
+      case 'FIST':
         gestCopy();
-        rippleCursor();
-      }
+        setHud('fist');
+        break;
+      case 'TWOFINGER':
+        setHud('grab'); showPill('✌️ HOLD TO GRAB CARD…',false);
+        break;
+      case 'PALM':
+        gestPaste();
+        setHud('palm');
+        break;
+      default:
+        setHud(null);
     }
-
-    // ── ENTER new state ──
-    gState = newG;
-    gHoldStart = now;
-    gDragId = gDragId && newG==='FIST' ? gDragId : null; // keep drag if still fist
-
-    if (newG === 'PINCH') {
-      placeCaretAt(sx, sy);
-      rippleCursor();
-      setHud('pinch');
-      showPill('🤏 CURSOR PLACED', false);
-    }
-    else if (newG === 'POINT') {
-      // Start selection at current caret
-      gSelectAnchor = ed.selectionStart !== ed.selectionEnd ? ed.selectionStart : gCaretPos;
-      ed.classList.add('gesture-selecting');
-      setHud('point');
-      showPill('☝️ SELECTING…', false);
-    }
-    else if (newG === 'PALM') {
-      gestPaste();
-      rippleCursor();
-      setHud('palm');
-    }
-    else if (newG === 'FIST') {
-      setHud('fist');
-      showPill('✊ HOLD TO DRAG CARD', false);
-    }
-    else {
-      setHud(null);
-    }
-
+ 
   } else {
-    // ── SAME state — continuous update ──
-    const holdMs = now - gHoldStart;
-
-    if (gState === 'PINCH') {
-      // Continuous cursor move while pinching
-      placeCaretAt(sx, sy);
-      setHud('pinch');
-    }
-    else if (gState === 'POINT') {
-      extendSelection(sx, sy);
-      setHud('point');
-    }
-    else if (gState === 'FIST') {
-      if (gDragId) {
-        // Update ghost position
-        gdragGhost.style.left = sx+'px';
-        gdragGhost.style.top  = sy+'px';
-        setHud('grab');
-      } else if (holdMs >= G_DRAG_MS) {
-        // Try to grab a card
-        const cid = cardAtPoint(sx, sy);
-        if (cid) {
-          startDrag(cid, sx, sy);
+    // ── SAME GESTURE — continuous ──
+    switch(gStable){
+      case 'PINCH':
+        placeCaretAt(sx,sy);
+        setHud('pinch');
+        break;
+ 
+      case 'POINT':
+        extendSelAt(sx,sy);
+        setHud('point');
+        const selLen=Math.abs((ed.selectionEnd||0)-(ed.selectionStart||0));
+        if(selLen>0) showPill('☝️ '+selLen+' chars',false);
+        break;
+ 
+      case 'TWOFINGER':
+        if(gDragLive){
+          moveDragGhost(sx,sy);
           setHud('grab');
+        } else if(holdMs>=HOLD_DRAG_MS){
+          // Grab the latest card (top of list)
+          const cards2=[...cardsEl.querySelectorAll('.card')];
+          const topId=cards2[0]?.dataset?.id;
+          if(topId){ startDragGhost(topId,sx,sy); setHud('grab'); }
+          else { showPill('✌️ No cards in clipboard','tpu'); }
         } else {
-          showPill('✊ POINT AT A CARD', false);
+          const pct=Math.min(100,Math.round(holdMs/HOLD_DRAG_MS*100));
+          cfill.style.width=pct+'%';
+          showPill('✌️ '+(100-pct)+'% hold…',false);
         }
-      }
+        break;
+ 
+      case 'FIST': setHud('fist'); break;
+      case 'PALM': setHud('palm'); break;
     }
   }
 }
-
+ 
 // ── CAMERA ──
 async function startCam(){
   const btn=document.getElementById('cbtn');
@@ -1268,13 +1273,13 @@ async function startCam(){
     toast('Camera denied — type to send instead','ty2');
   }
 }
-
+ 
 function retryCam(){
   denyov.style.display='none'; permov.style.display='flex';
   const btn=document.getElementById('cbtn');
   btn.disabled=false; btn.textContent='Enable Camera';
 }
-
+ 
 function toggleCam(){
   if(camRunning){
     if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
@@ -1291,7 +1296,7 @@ function toggleCam(){
     startCam();
   }
 }
-
+ 
 // ── BOOT ──
 const urlEl = document.getElementById('mb-url');
 if(urlEl) urlEl.textContent = location.href.length > 50 ? location.href.slice(0,50)+'…' : location.href;
