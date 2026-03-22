@@ -75,25 +75,28 @@ header{flex-shrink:0;height:50px;display:flex;align-items:center;padding:0 14px;
 #ed::selection{background:rgba(0,229,176,.18)}
 #ed.sel-active::selection{background:rgba(245,158,11,.3)}
  
-/* Gesture cursor dot — sits ABOVE the editor, NOT inside #ed-wrap */
+/* Gesture cursor — position:fixed so it covers the FULL viewport */
 #gcursor{
-  position:absolute;z-index:100;pointer-events:none;
-  width:18px;height:18px;border-radius:50%;
+  position:fixed;z-index:99990;pointer-events:none;
+  width:20px;height:20px;border-radius:50%;
   transform:translate(-50%,-50%);
   display:none;
-  transition:background .08s,border-color .08s,width .08s,height .08s;
+  transition:width .06s,height .06s,background .06s,border-color .06s;
 }
-#gcursor.vis{display:block}
-#gcursor.pinch {background:rgba(0,229,176,.4);border:2px solid var(--g);box-shadow:var(--sg)}
-#gcursor.point {background:transparent;border:2.5px solid var(--y);box-shadow:0 0 8px var(--y)}
-#gcursor.point::after{content:'';position:absolute;inset:4px;border-radius:50%;background:var(--y)}
-#gcursor.fist  {width:24px;height:24px;background:rgba(239,68,68,.3);border:2px solid var(--r)}
-#gcursor.two   {background:transparent;border:2px solid var(--y);box-shadow:0 0 8px var(--y)}
-#gcursor.palm  {width:26px;height:26px;background:rgba(168,85,247,.3);border:2px solid var(--pu);box-shadow:var(--sp)}
-@keyframes gcpop{0%{opacity:.7;transform:translate(-50%,-50%) scale(1)}
-  100%{opacity:0;transform:translate(-50%,-50%) scale(2.4)}}
-.gc-ring{position:absolute;inset:-3px;border-radius:50%;
-  border:1.5px solid currentColor;animation:gcpop .5s ease forwards}
+#gcursor.vis    {display:block}
+#gcursor.c-two  {background:rgba(0,229,176,.12);border:2.5px solid var(--g);box-shadow:var(--sg)}
+#gcursor.c-grab {width:26px;height:26px;background:rgba(168,85,247,.22);border:2.5px solid var(--pu);box-shadow:var(--sp)}
+#gcursor.c-pinch{background:rgba(0,229,176,.35);border:2px solid var(--g);box-shadow:var(--sg)}
+#gcursor.c-point{background:transparent;border:2.5px solid var(--y);box-shadow:0 0 8px var(--y)}
+#gcursor.c-point::after{content:'';position:absolute;inset:4px;border-radius:50%;background:var(--y)}
+#gcursor.c-fist {width:24px;height:24px;background:rgba(239,68,68,.28);border:2px solid var(--r)}
+#gcursor.c-palm {width:26px;height:26px;background:rgba(168,85,247,.28);border:2px solid var(--pu);box-shadow:var(--sp)}
+/* Ripple ring */
+@keyframes gcpop{0%{opacity:.75;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.6)}}
+.gc-ring{position:absolute;inset:-3px;border-radius:50%;border:1.5px solid currentColor;animation:gcpop .5s ease forwards}
+/* Card hover highlight when gesture cursor is over it */
+.card.g-hover{border-color:var(--g)!important;box-shadow:0 0 0 2px rgba(0,229,176,.25),0 4px 20px rgba(0,0,0,.3)!important;transform:translateY(-2px)!important}
+.card.g-hover .ctxt{color:#fff}
  
 /* ── RIGHT: stacked sections ── */
 #right{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;
@@ -312,6 +315,8 @@ header{flex-shrink:0;height:50px;display:flex;align-items:center;padding:0 14px;
 <!-- toasts + ghost -->
 <div id="toasts"></div>
 <div id="drag-ghost"></div>
+<!-- Global gesture cursor — fixed, covers full screen -->
+<div id="gcursor"></div>
  
 <!-- MOBILE BLOCKER -->
 <div id="mob-block">
@@ -343,8 +348,7 @@ header{flex-shrink:0;height:50px;display:flex;align-items:center;padding:0 14px;
         <span class="panel-title">📝 Editor</span>
         <span class="panel-tag">drag cards here · gesture enabled</span>
       </div>
-      <!-- gcursor lives here, sibling to #ed-wrap, so it's not clipped -->
-      <div id="gcursor"></div>
+      <!-- gcursor is now fixed/global in body -->
       <div id="ed-wrap">
         <textarea id="ed" spellcheck="false">Gesture controls (enable camera first):
  
@@ -402,11 +406,12 @@ Pack my box with five dozen liquor jugs.
  
       <!-- GESTURE HUD -->
       <div id="ghud">
-        <div class="gr" id="gr-pinch"><span class="gr-ico">🤏</span><span>Pinch<b>Place cursor</b></span></div>
-        <div class="gr" id="gr-point"><span class="gr-ico">☝️</span><span>Point+move<b>Select text</b></span></div>
-        <div class="gr" id="gr-fist"> <span class="gr-ico">✊</span><span>Fist<b>Copy</b></span></div>
-        <div class="gr" id="gr-two">  <span class="gr-ico">✌️</span><span>2-finger hold<b>Drag card</b></span></div>
-        <div class="gr" id="gr-palm"> <span class="gr-ico">✋</span><span>Palm<b>Paste here</b></span></div>
+        <div class="gr" id="gr-two">  <span class="gr-ico">✌️</span><span>2 fingers<b>Move cursor anywhere</b></span></div>
+        <div class="gr" id="gr-three"><span class="gr-ico">🤟</span><span>3 fingers<b>Grab hovered card</b></span></div>
+        <div class="gr" id="gr-drop"> <span class="gr-ico">✌️</span><span>Curl ring finger<b>Drop card here</b></span></div>
+        <div class="gr" id="gr-pinch"><span class="gr-ico">🤏</span><span>Pinch<b>Place text cursor</b></span></div>
+        <div class="gr" id="gr-fist"> <span class="gr-ico">✊</span><span>Fist<b>Copy selection</b></span></div>
+        <div class="gr" id="gr-palm"> <span class="gr-ico">✋</span><span>Palm<b>Paste at cursor</b></span></div>
       </div>
  
       <!-- ROOM -->
@@ -686,169 +691,173 @@ function pasteToEditor(text) {
 }
  
 // ════════════════════════════════════════════════════════════
-// GESTURE ENGINE
+// GESTURE ENGINE  — new flow:
+//   ✌️  TWO   → global cursor moves anywhere on screen
+//              → hovers over cards to highlight them
+//   🤟 THREE  → grab the highlighted card (follows cursor)
+//   ✌️  back to TWO → drop card at current position
+//   🤏 PINCH  → place text cursor in editor
+//   ☝️  POINT  → select text
+//   ✊ FIST   → copy selection
+//   ✋ PALM   → paste
 // ════════════════════════════════════════════════════════════
  
-// HUD elements
-const grEls={
-  pinch:document.getElementById('gr-pinch'),
-  point:document.getElementById('gr-point'),
-  fist: document.getElementById('gr-fist'),
-  two:  document.getElementById('gr-two'),
-  palm: document.getElementById('gr-palm'),
+const grEls = {
+  two:   document.getElementById('gr-two'),
+  three: document.getElementById('gr-three'),
+  drop:  document.getElementById('gr-drop'),
+  pinch: document.getElementById('gr-pinch'),
+  fist:  document.getElementById('gr-fist'),
+  palm:  document.getElementById('gr-palm'),
 };
-const GR_COL={pinch:'on-g',point:'on-y',fist:'on-r',two:'on-y',palm:'on-p'};
+const GR_COL = {two:'on-g',three:'on-p',drop:'on-y',pinch:'on-g',fist:'on-r',palm:'on-p'};
 function setHud(k){
   Object.entries(grEls).forEach(([n,el])=>{ if(el) el.className='gr'+(n===k?' '+GR_COL[n]:''); });
 }
  
-// Gesture state
-let gCur      = 'NONE';  // current stable gesture name
-let gBuf      = [];       // rolling buffer for debounce
-let gT0       = 0;        // when current gesture started
-let gCaretPos = 0;        // last caret position set by pinch
-let gSelAnc   = -1;       // selection anchor char index
-let gDragId   = null;     // card id being dragged
+// State
+let gCur      = 'NONE';
+let gBuf      = [];
+let gT0       = 0;
+let gCaretPos = 0;
+let gSelAnc   = -1;
+let gDragId   = null;
 let gDragging = false;
+let gHoverId  = null;  // card id currently hovered by 2-finger cursor
 let pillTimer = null;
  
-const BUF      = 4;     // frames to confirm a new gesture
-const DRAG_MS  = 700;   // hold two-finger this long to start drag
+const BUF = 4;  // frames to confirm gesture change
  
 function dist(a,b){ return Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2); }
  
-// ── Classify hand into a gesture name ──
+// ── Classify gesture from landmarks ──
 function classify(lm){
   const sc = dist(lm[0],lm[9]) || 0.1;
  
-  // PINCH: thumb tip within 35% of hand scale from index tip
-  if(dist(lm[4],lm[8])/sc < 0.35) return {name:'PINCH',tip:lm[8]};
+  // PINCH: thumb tip close to index tip
+  if(dist(lm[4],lm[8])/sc < 0.35) return {name:'PINCH', tip:lm[8]};
  
-  // Finger up = tip.y < pip.y (higher on screen = smaller y in image coords)
-  const up=[
+  // finger up = tip.y < pip.y
+  const up = [
     lm[8].y  < lm[6].y,   // index
     lm[12].y < lm[10].y,  // middle
     lm[16].y < lm[14].y,  // ring
     lm[20].y < lm[18].y,  // pinky
   ];
  
-  // Only index up → POINT
-  if( up[0]&&!up[1]&&!up[2]&&!up[3]) return {name:'POINT',tip:lm[8]};
-  // Index + middle up only → TWO FINGER
-  if( up[0]&& up[1]&&!up[2]&&!up[3]) return {name:'TWO',tip:lm[8]};
-  // All up → PALM
-  if( up[0]&& up[1]&& up[2]&& up[3]) return {name:'PALM',tip:lm[9]};
-  // All down → FIST
-  if(!up[0]&&!up[1]&&!up[2]&&!up[3]) return {name:'FIST',tip:lm[9]};
+  if( up[0]&&!up[1]&&!up[2]&&!up[3]) return {name:'POINT', tip:lm[8]};
+  if( up[0]&& up[1]&&!up[2]&&!up[3]) return {name:'TWO',   tip:lm[8]};   // ✌️ index+middle
+  if( up[0]&& up[1]&& up[2]&&!up[3]) return {name:'THREE', tip:lm[12]};  // 🤟 index+middle+ring
+  if( up[0]&& up[1]&& up[2]&& up[3]) return {name:'PALM',  tip:lm[9]};
+  if(!up[0]&&!up[1]&&!up[2]&&!up[3]) return {name:'FIST',  tip:lm[9]};
  
-  return {name:'NONE',tip:lm[9]};
+  return {name:'NONE', tip:lm[9]};
 }
  
-// ── Convert normalised camera coords → absolute screen px on left panel ──
-// Camera video has scaleX(-1) CSS, so we flip x: screenX = panelLeft + (1-tip.x)*panelWidth
+// ── Map tip (0-1 normalised camera) → FULL SCREEN pixel coords ──
+// Camera video is CSS mirrored (scaleX(-1)), so flip X.
 function tipToScreen(tip){
-  const r = leftPanel.getBoundingClientRect();
   return {
-    x: r.left + (1 - tip.x) * r.width,
-    y: r.top  +       tip.y  * r.height,
+    x: (1 - tip.x) * window.innerWidth,
+    y: tip.y        * window.innerHeight,
   };
 }
  
-// ── Place text cursor in #ed at absolute screen position (x,y) ──
-// Uses canvas 2d caretPositionFromPoint or manual line/char math.
-function placeCaretAt(x, y){
-  const r   = ed.getBoundingClientRect();
-  // Clamp to editor bounds
-  const cx  = Math.max(r.left+1, Math.min(r.right-1, x));
-  const cy  = Math.max(r.top+1,  Math.min(r.bottom-1, y));
- 
-  // Measure using computed style
-  const cs   = window.getComputedStyle(ed);
-  const fs   = parseFloat(cs.fontSize)   || 14;
-  const lh   = parseFloat(cs.lineHeight) || fs * 1.82;
-  const pt   = parseFloat(cs.paddingTop)    || 16;
-  const pl   = parseFloat(cs.paddingLeft)   || 18;
-  // DM Sans average char width ≈ 0.54 × fontSize (measured)
-  const cw   = fs * 0.54;
- 
-  const lines = ed.value.split('\n');
-  const relY  = cy - r.top  - pt;
-  const relX  = cx - r.left - pl;
- 
-  const li = Math.max(0, Math.min(lines.length-1, Math.floor(relY / lh)));
-  const ci = Math.max(0, Math.min(lines[li].length, Math.round(relX / cw)));
- 
-  let pos = 0;
-  for(let i=0; i<li; i++) pos += lines[i].length + 1; // +1 for \n
-  pos += ci;
- 
-  ed.focus();
-  ed.setSelectionRange(pos, pos);
-  gCaretPos = pos;
-}
- 
-// ── Extend selection from gSelAnc to position at (x,y) ──
-function extendSelTo(x, y){
-  if(gSelAnc < 0) return;
-  const r   = ed.getBoundingClientRect();
-  const cx  = Math.max(r.left+1, Math.min(r.right-1, x));
-  const cy  = Math.max(r.top+1,  Math.min(r.bottom-1, y));
-  const cs  = window.getComputedStyle(ed);
-  const fs  = parseFloat(cs.fontSize)   || 14;
-  const lh  = parseFloat(cs.lineHeight) || fs * 1.82;
-  const pt  = parseFloat(cs.paddingTop)    || 16;
-  const pl  = parseFloat(cs.paddingLeft)   || 18;
-  const cw  = fs * 0.54;
- 
-  const lines = ed.value.split('\n');
-  const relY  = cy - r.top  - pt;
-  const relX  = cx - r.left - pl;
-  const li    = Math.max(0, Math.min(lines.length-1, Math.floor(relY / lh)));
-  const ci    = Math.max(0, Math.min(lines[li].length, Math.round(relX / cw)));
- 
-  let end = 0;
-  for(let i=0; i<li; i++) end += lines[i].length + 1;
-  end += ci;
- 
-  const s = Math.min(gSelAnc, end), e = Math.max(gSelAnc, end);
-  ed.focus();
-  ed.setSelectionRange(s, e);
-}
- 
-// ── Move visual cursor dot ──
+// ── Update the fixed global cursor dot ──
 function moveCursor(x, y, cls){
-  // gcursor is absolute inside #left, so offset from #left
-  const r  = leftPanel.getBoundingClientRect();
-  const lx = Math.max(0, Math.min(r.width,  x - r.left));
-  const ly = Math.max(0, Math.min(r.height, y - r.top));
-  gcursor.style.left = lx+'px';
-  gcursor.style.top  = ly+'px';
+  gcursor.style.left = x + 'px';
+  gcursor.style.top  = y + 'px';
   gcursor.className  = 'vis ' + (cls||'');
 }
-function hideCursor(){ gcursor.className=''; }
+function hideCursor(){ gcursor.className = ''; }
  
+// ── Ripple ──
 function ripple(){
-  const rp=document.createElement('div'); rp.className='gc-ring';
-  gcursor.appendChild(rp); setTimeout(()=>rp.remove(),550);
+  const r=document.createElement('div'); r.className='gc-ring';
+  gcursor.appendChild(r); setTimeout(()=>r.remove(),550);
 }
  
-function showPill(msg,p){
-  gpill.textContent=msg; gpill.className='show'+(p?' pp':'');
-  clearTimeout(pillTimer); pillTimer=setTimeout(()=>{gpill.className='';pillTimer=null;},2000);
+// ── Find topmost .card element at screen coords ──
+function cardAtXY(x, y){
+  const els = document.elementsFromPoint(x, y);
+  for(const el of els){
+    const c = el.closest?.('.card');
+    if(c?.dataset?.id) return c;
+  }
+  return null;
+}
+ 
+// ── Highlight card on hover ──
+function setHoverCard(id){
+  if(gHoverId === id) return;
+  // Remove old
+  if(gHoverId){
+    const old = cardsEl.querySelector('[data-id="'+gHoverId+'"]');
+    if(old) old.classList.remove('g-hover');
+  }
+  gHoverId = id;
+  if(id){
+    const el = cardsEl.querySelector('[data-id="'+id+'"]');
+    if(el) el.classList.add('g-hover');
+  }
+}
+ 
+// ── Drag ghost ──
+function startDrag(id, x, y){
+  const item = items[id]; if(!item) return;
+  gDragId   = id;
+  gDragging = true;
+  // Remove hover glow — card is now being dragged
+  setHoverCard(null);
+  // Style the ghost
+  dragGhost.textContent = item.text.slice(0,36)+(item.text.length>36?'…':'');
+  dragGhost.classList.add('show');
+  dragGhost.style.left = x+'px';
+  dragGhost.style.top  = y+'px';
+  ripple();
+  showPill('🤟 GRABBED — lower ring finger to drop',false);
+  toast('🤟 Card grabbed — move & lower ring finger to drop','ty2');
+}
+function moveDragGhost(x, y){
+  dragGhost.style.left = x+'px';
+  dragGhost.style.top  = y+'px';
+}
+function dropDragAt(x, y){
+  const item = gDragId ? items[gDragId] : null;
+  dragGhost.classList.remove('show');
+  setHoverCard(null);
+  if(item){
+    const r = ed.getBoundingClientRect();
+    if(x>=r.left && x<=r.right && y>=r.top && y<=r.bottom){
+      const pos = computeCaretPos(x, y);
+      insertAtPos(item.text, pos);
+      toast('✌️ Dropped into editor!','ty2'); ripple();
+    } else {
+      toast('Dropped outside editor — cancelled','ty2');
+    }
+  }
+  gDragId   = null;
+  gDragging = false;
+}
+ 
+// ── Pill / flash helpers ──
+function showPill(msg, p){
+  gpill.textContent = msg; gpill.className = 'show'+(p?' pp':'');
+  clearTimeout(pillTimer); pillTimer = setTimeout(()=>{ gpill.className=''; pillTimer=null; }, 2200);
 }
 function doFlash(c){ camflash.className=c; setTimeout(()=>camflash.className='',550); }
  
-// ── Copy selected text ──
+// ── Copy ──
 function gestCopy(){
   const s=ed.selectionStart, e2=ed.selectionEnd;
   if(s===e2){ toast('⚠ Use ☝️ Point to select text first','tpu'); return; }
-  const txt=ed.value.substring(s,e2);
+  const txt = ed.value.substring(s, e2);
   sendItem(txt);
   doFlash('fg'); showPill('✊ COPIED + SENT!',false);
   toast('✊ Copied & sent to room','tg2'); ripple();
 }
  
-// ── Paste latest clipboard item ──
+// ── Paste ──
 function gestPaste(){
   const latest=Object.values(items).filter(i=>i.text&&!i._del).sort((a,b)=>b.ts-a.ts)[0];
   if(!latest){ toast('⚠ Nothing in clipboard','tpu'); return; }
@@ -857,172 +866,157 @@ function gestPaste(){
   doFlash('fp'); showPill('✋ PASTED!',true); ripple();
 }
  
-// ── Start drag ghost ──
-function startDrag(id, x, y){
-  const item=items[id]; if(!item) return;
-  gDragId=id; gDragging=true;
-  dragGhost.textContent=item.text.slice(0,40)+(item.text.length>40?'…':'');
-  dragGhost.classList.add('show');
-  dragGhost.style.left=x+'px'; dragGhost.style.top=y+'px';
-  showPill('✌️ MOVE TO EDITOR → OPEN HAND',false);
-}
-function moveDrag(x,y){
-  dragGhost.style.left=x+'px'; dragGhost.style.top=y+'px';
-}
-function dropDrag(x, y){
-  const item = gDragId ? items[gDragId] : null;
-  dragGhost.classList.remove('show');
-  if (item) {
-    const r = ed.getBoundingClientRect();
-    if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
-      const pos = computeCaretPos(x, y);
-      insertAtPos(item.text, pos);
-      toast('✌️ Dropped!', 'ty2'); ripple();
-    } else {
-      toast('Move hand over editor then open', 'ty2');
-    }
-  }
-  gDragId = null; gDragging = false;
-}
- 
 // ════════════════════════════════════════
-// onResults — called per frame
+// onResults — per frame
 // ════════════════════════════════════════
 function onResults(res){
-  hcvs.width =camvid.videoWidth ||hcvs.offsetWidth;
-  hcvs.height=camvid.videoHeight||hcvs.offsetHeight;
+  hcvs.width  = camvid.videoWidth  || hcvs.offsetWidth;
+  hcvs.height = camvid.videoHeight || hcvs.offsetHeight;
   hctx.clearRect(0,0,hcvs.width,hcvs.height);
  
   if(!res.multiHandLandmarks?.length){
     dhand.className='dot'; shand.textContent='HAND';
     cwrap.className=''; if(!pillTimer) gpill.className='';
     hideCursor();
-    // clean up mid-gesture
-    if(gDragging) dropDrag(-9999,-9999);
-    if(gCur==='POINT') ed.classList.remove('sel-active');
+    if(gDragging)          dropDragAt(-9999,-9999);
+    if(gCur==='POINT')     ed.classList.remove('sel-active');
+    setHoverCard(null);
     gCur='NONE'; gBuf=[]; setHud(null);
     return;
   }
  
   dhand.className='dot dp'; shand.textContent='DETECTED';
-  const lm=res.multiHandLandmarks[0];
+  const lm = res.multiHandLandmarks[0];
  
-  // Draw hand skeleton
-  drawConnectors(hctx,lm,HAND_CONNECTIONS,{color:'rgba(0,229,176,.28)',lineWidth:1.5});
-  drawLandmarks(hctx,lm,{color:'rgba(0,229,176,.82)',fillColor:'rgba(0,0,0,.4)',
-    lineWidth:1, radius:d=>(d.index===4||d.index===8)?6:3});
+  drawConnectors(hctx,lm,HAND_CONNECTIONS,{color:'rgba(0,229,176,.25)',lineWidth:1.5});
+  drawLandmarks(hctx,lm,{color:'rgba(0,229,176,.8)',fillColor:'rgba(0,0,0,.4)',
+    lineWidth:1,radius:d=>(d.index===4||d.index===8)?6:3});
  
   const cl   = classify(lm);
   const rawG = cl.name;
   const tip  = cl.tip;
  
-  // Debounce: only commit after BUF identical frames
+  // Debounce buffer
   gBuf.push(rawG);
   if(gBuf.length > BUF) gBuf.shift();
-  if(!gBuf.every(g=>g===gBuf[0])) {
-    // Still flickering — just update cursor position without changing state
-    const {x,y}=tipToScreen(tip);
-    if(gCur!=='NONE') moveCursor(x,y,{PINCH:'pinch',POINT:'point',TWO:'two',FIST:'fist',PALM:'palm'}[gCur]||'');
-    return;
-  }
-  const newG = gBuf[0];
  
-  const now  = Date.now();
+  // Always update cursor position immediately (smooth movement)
   const {x:sx, y:sy} = tipToScreen(tip);
+  const curCls = {TWO:'c-two',THREE:'c-grab',PINCH:'c-pinch',POINT:'c-point',FIST:'c-fist',PALM:'c-palm'}[rawG]||'c-two';
+  if(rawG!=='NONE') moveCursor(sx,sy,curCls); else if(gCur==='NONE') hideCursor();
  
-  // Confidence bar (just show solid when gesture detected)
+  // For TWO: live hover detection every frame regardless of buffer
+  if(rawG === 'TWO' && !gDragging){
+    const hovCard = cardAtXY(sx, sy);
+    setHoverCard(hovCard?.dataset?.id || null);
+  }
+ 
+  // For THREE (dragging): move ghost every frame
+  if(rawG === 'THREE' && gDragging){
+    moveDragGhost(sx, sy);
+    setHud('three');
+  }
+ 
+  // Only commit gesture change once buffer is stable
+  if(!gBuf.every(g=>g===gBuf[0])) return;
+  const newG = gBuf[0];
+  const now  = Date.now();
+ 
+  // Confidence bar
   cwrap.className = newG!=='NONE'?'show':'';
   cfill.style.width = newG!=='NONE'?'90%':'0';
-  cfill.style.background={PINCH:'var(--g)',POINT:'var(--y)',TWO:'var(--y)',FIST:'var(--r)',PALM:'var(--pu)'}[newG]||'var(--g)';
+  cfill.style.background={TWO:'var(--g)',THREE:'var(--pu)',PINCH:'var(--g)',
+    POINT:'var(--y)',FIST:'var(--r)',PALM:'var(--pu)'}[newG]||'var(--g)';
  
-  // Visual cursor
-  const curCls={PINCH:'pinch',POINT:'point',TWO:'two',FIST:'fist',PALM:'palm'}[newG]||'';
-  if(curCls) moveCursor(sx,sy,curCls); else hideCursor();
- 
-  const holdMs = now - gT0;
- 
-  // ── GESTURE CHANGED ──
-  if(newG !== gCur){
-    const prev = gCur;
- 
-    // EXIT previous
-    if(prev==='POINT'){
-      ed.classList.remove('sel-active');
-      gSelAnc=-1;
-      // keep selection in place — user can now fist to copy
-    }
-    if(prev==='TWO' && gDragging){
-      dropDrag(sx,sy);
-    }
- 
-    // Update state
-    gCur=newG; gT0=now;
- 
-    // ENTER new
-    switch(newG){
-      case 'PINCH':
-        placeCaretAt(sx,sy); ripple();
-        setHud('pinch'); showPill('🤏 CURSOR PLACED — MOVE TO POSITION',false);
-        break;
-      case 'POINT':
-        gSelAnc=gCaretPos;
-        ed.classList.add('sel-active');
-        setHud('point'); showPill('☝️ MOVE FINGER TO SELECT TEXT',false);
-        break;
-      case 'FIST':
-        gestCopy();
-        setHud('fist');
-        break;
-      case 'TWO':
-        setHud('two'); showPill('✌️ HOLD TO GRAB LATEST CARD…',false);
-        break;
-      case 'PALM':
-        gestPaste();
-        setHud('palm');
-        break;
-      default:
-        setHud(null);
-        if(!pillTimer) gpill.className='';
-    }
- 
-  } else {
-    // ── SAME GESTURE — continuous ──
+  if(newG === gCur) {
+    // ── SAME gesture — continuous actions ──
     switch(gCur){
- 
-      case 'PINCH':
-        // Move caret as hand moves
-        placeCaretAt(sx,sy);
-        setHud('pinch');
+      case 'TWO':
+        setHud('two');
+        // Hover feedback
+        if(gHoverId) showPill('✌️ HOVER — raise ring finger to grab',false);
+        else         showPill('✌️ POINT AT A CLIPBOARD CARD',false);
         break;
- 
+      case 'THREE':
+        setHud('three');
+        break;
+      case 'PINCH':
+        placeCaretAt(sx,sy); setHud('pinch');
+        break;
       case 'POINT':
-        // Continuously extend selection
-        extendSelTo(sx,sy);
-        setHud('point');
+        extendSelTo(sx,sy); setHud('pinch');
         const n=Math.abs((ed.selectionEnd||0)-(ed.selectionStart||0));
         if(n>0) showPill('☝️ '+n+' chars selected',false);
         break;
- 
-      case 'TWO':
-        if(gDragging){
-          moveDrag(sx,sy);
-          setHud('two');
-        } else if(holdMs>=DRAG_MS){
-          // Grab top card
-          const allCards=[...cardsEl.querySelectorAll('.card')];
-          const topId=allCards[0]?.dataset?.id;
-          if(topId){ startDrag(topId,sx,sy); setHud('two'); }
-          else showPill('✌️ No cards in clipboard','tpu');
-        } else {
-          // Show progress bar
-          cfill.style.width=Math.min(90,holdMs/DRAG_MS*90)+'%';
-          showPill('✌️ HOLD… '+(Math.ceil((DRAG_MS-holdMs)/100)*100)+'ms',false);
-        }
-        break;
- 
-      case 'FIST': setHud('fist'); break;
-      case 'PALM': setHud('palm'); break;
     }
+    return;
+  }
+ 
+  // ── GESTURE CHANGED ──
+  const prev = gCur;
+  gCur = newG; gT0 = now;
+ 
+  // EXIT previous
+  switch(prev){
+    case 'POINT':
+      ed.classList.remove('sel-active');
+      gSelAnc = -1;
+      break;
+    case 'THREE':
+      // Ring finger curled back down → DROP
+      if(gDragging){
+        dropDragAt(sx, sy);
+      }
+      break;
+    case 'TWO':
+      if(!gDragging) setHoverCard(null);
+      break;
+  }
+ 
+  // ENTER new
+  switch(newG){
+    case 'TWO':
+      setHud('two');
+      showPill('✌️ POINT AT A CLIPBOARD CARD',false);
+      break;
+ 
+    case 'THREE':
+      // Grab whatever card is hovered
+      if(gHoverId){
+        startDrag(gHoverId, sx, sy);
+        setHud('three');
+      } else if(gDragging){
+        // Already dragging — keep going
+        setHud('three');
+      } else {
+        showPill('🤟 HOVER A CARD FIRST with ✌️',false);
+        toast('⚠ Point at a clipboard card first with ✌️','tpu');
+        gCur = 'TWO'; // revert
+      }
+      break;
+ 
+    case 'PINCH':
+      placeCaretAt(sx,sy); ripple();
+      setHud('pinch'); showPill('🤏 CURSOR PLACED',false);
+      break;
+ 
+    case 'POINT':
+      gSelAnc = gCaretPos;
+      ed.classList.add('sel-active');
+      setHud('pinch'); showPill('☝️ MOVE TO SELECT',false);
+      break;
+ 
+    case 'FIST':
+      gestCopy(); setHud('fist');
+      break;
+ 
+    case 'PALM':
+      gestPaste(); setHud('palm');
+      break;
+ 
+    default:
+      setHud(null);
+      if(!pillTimer) gpill.className='';
   }
 }
  
