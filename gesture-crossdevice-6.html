@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>GestureClip</title>
+<script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=DM+Sans:wght@400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#00e5b0;--pu:#a855f7;--y:#f59e0b;--r:#ef4444;
+  --bg:#080b12;--sur:rgba(11,16,28,0.97);--bd:rgba(0,229,176,0.13);
+  --tx:#cce4f5;--sub:rgba(204,228,245,0.4);
+  --sg:0 0 10px #00e5b077,0 0 22px #00e5b022;
+  --sp:0 0 10px #a855f777,0 0 22px #a855f722;
+  --sy:0 0 8px #f59e0b66;
+  --sb:env(safe-area-inset-bottom,0px);
+}
+html,body{
+  height:100%;background:var(--bg);
+  font-family:'DM Sans',sans-serif;color:var(--tx);
+  overflow:hidden;-webkit-tap-highlight-color:transparent;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(0,229,176,.012) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,229,176,.012) 1px,transparent 1px);
+  background-size:54px 54px;
+}
+
+/* ═══════════════════════════════════
+   APP SHELL  — header + two-col body
+═══════════════════════════════════ */
+#app{
+  position:relative;z-index:1;
+  display:flex;flex-direction:column;
+  height:100dvh;height:100vh;
+}
+header{
+  flex-shrink:0;height:50px;
+  display:flex;align-items:center;padding:0 14px;gap:10px;
+  border-bottom:1px solid var(--bd);
+  background:rgba(8,11,18,.99);
+  backdrop-filter:blur(14px);
+}
+.logo{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.gem{width:24px;height:24px;border-radius:6px;
+  background:linear-gradient(135deg,var(--g),var(--pu));
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;box-shadow:var(--sg);flex-shrink:0}
+.logo h1{font-size:.78rem;font-weight:700;letter-spacing:.1em;
+  color:var(--g);text-shadow:var(--sg);white-space:nowrap}
+.stats{display:flex;gap:5px;flex-shrink:0;margin-left:auto}
+.stat{display:flex;align-items:center;gap:3px;
+  font-family:'Share Tech Mono',monospace;font-size:.52rem;
+  padding:2px 7px;border:1px solid var(--bd);border-radius:100px}
+.dot{width:5px;height:5px;border-radius:50%;background:#222;transition:all .3s;flex-shrink:0}
+.dg{background:var(--g);box-shadow:0 0 5px var(--g)}
+.dp{background:var(--pu);box-shadow:0 0 5px var(--pu)}
+.dy{background:var(--y);box-shadow:0 0 5px var(--y)}
+
+/* two-col body */
+#body{
+  flex:1;
+  min-height:0;
+  display:flex;
+  flex-direction:row;
+  overflow:hidden;
+}
+
+/* ═══════════════════════════════════
+   LEFT — EDITOR
+═══════════════════════════════════ */
+#left{
+  width:50%;
+  flex-shrink:0;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  border-right:1px solid var(--bd);
+  background:rgba(9,13,23,.6);
+  overflow:hidden;
+}
+.panel-head{
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 14px 7px;
+  border-bottom:1px solid var(--bd);
+}
+.panel-title{font-size:.6rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--sub)}
+.panel-tag{font-family:'Share Tech Mono',monospace;font-size:.54rem;letter-spacing:.07em;
+  padding:2px 7px;border-radius:100px;border:1px solid rgba(168,85,247,.22);
+  color:var(--pu);background:rgba(168,85,247,.06)}
+
+#dz{flex:1;position:relative;overflow:hidden;transition:background .18s}
+#dz.over{background:rgba(0,229,176,.03)}
+#dz.over::after{
+  content:'↓ Drop to paste';
+  position:absolute;bottom:0;left:0;right:0;
+  text-align:center;padding:4px;
+  font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:.09em;
+  color:rgba(0,229,176,.4);background:rgba(0,229,176,.04);
+  border-top:1px dashed rgba(0,229,176,.16);
+}
+#ed{
+  position:absolute;inset:0;resize:none;
+  background:transparent;border:none;outline:none;
+  color:var(--tx);font-family:'DM Sans',sans-serif;
+  font-size:.88rem;line-height:1.82;
+  padding:16px 18px;caret-color:var(--g);z-index:1;
+  -webkit-overflow-scrolling:touch;
+}
+#ed::selection{background:rgba(0,229,176,.14)}
+
+/* ═══════════════════════════════════
+   RIGHT — three stacked sections
+═══════════════════════════════════ */
+#right{
+  flex:1;
+  min-width:0;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  background:var(--sur);
+  overflow:hidden;
+}
+
+/* ── CAM SECTION ── */
+#cam-section{
+  flex-shrink:0;
+  display:flex;flex-direction:row;
+  border-bottom:1px solid var(--bd);
+  gap:0;
+}
+
+/* on/off toggle column */
+#cam-ctrl{
+  flex-shrink:0;width:52px;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-start;
+  gap:8px;
+  padding:10px 0 10px;
+  border-right:1px solid var(--bd);
+  background:rgba(8,11,18,.6);
+}
+#camtoggle{
+  width:34px;height:34px;border-radius:50%;
+  border:1.5px solid rgba(0,229,176,.4);
+  background:rgba(0,229,176,.09);
+  color:var(--g);font-size:.88rem;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;
+  transition:background .18s,border-color .18s,box-shadow .18s;
+  -webkit-appearance:none;
+}
+#camtoggle:hover,#camtoggle:active{background:rgba(0,229,176,.2);border-color:var(--g);box-shadow:var(--sg)}
+#camtoggle.camoff{border-color:rgba(239,68,68,.5);background:rgba(239,68,68,.1);color:var(--r)}
+#camtoggle.camoff:hover,#camtoggle.camoff:active{background:rgba(239,68,68,.22);box-shadow:0 0 10px rgba(239,68,68,.4)}
+.ctrl-label{
+  font-family:'Share Tech Mono',monospace;font-size:.46rem;
+  letter-spacing:.1em;color:var(--sub);text-transform:uppercase;
+  writing-mode:vertical-rl;text-orientation:mixed;
+  transform:rotate(180deg);opacity:.6;
+}
+
+/* video area */
+#cam-view{
+  flex:1;position:relative;
+  background:#000;
+  aspect-ratio:4/3;
+  min-height:0;overflow:hidden;
+}
+#cam-view video{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;transform:scaleX(-1);opacity:.9;
+}
+#hcvs{
+  position:absolute;inset:0;width:100%;height:100%;
+  transform:scaleX(-1);z-index:2;
+}
+#camflash{
+  position:absolute;inset:0;pointer-events:none;
+  border:2px solid transparent;z-index:3;transition:all .15s;
+}
+#camflash.fg{border-color:var(--g);box-shadow:inset 0 0 22px rgba(0,229,176,.18)}
+#camflash.fp{border-color:var(--pu);box-shadow:inset 0 0 22px rgba(168,85,247,.18)}
+.bk{position:absolute;inset:6px;pointer-events:none;z-index:3}
+.bk span{position:absolute;width:10px;height:10px;border-color:rgba(0,229,176,.5);border-style:solid}
+.bk .tl{top:0;left:0;border-width:1.5px 0 0 1.5px}
+.bk .tr{top:0;right:0;border-width:1.5px 1.5px 0 0}
+.bk .bl{bottom:0;left:0;border-width:0 0 1.5px 1.5px}
+.bk .br{bottom:0;right:0;border-width:0 1.5px 1.5px 0}
+/* overlays */
+.camov{
+  position:absolute;inset:0;z-index:20;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:7px;background:rgba(8,11,18,.96);padding:12px;text-align:center;
+}
+.camov .ico{font-size:1.5rem}
+.camov h3{font-size:.78rem;font-weight:600;letter-spacing:.05em}
+.camov p{font-size:.64rem;color:var(--sub);line-height:1.5;max-width:170px}
+#cbtn{
+  padding:7px 16px;
+  background:linear-gradient(135deg,var(--g),var(--pu));
+  border:none;border-radius:8px;
+  font-family:'Share Tech Mono',monospace;font-size:.63rem;letter-spacing:.08em;
+  color:#080b12;font-weight:700;cursor:pointer;box-shadow:var(--sg);
+  transition:opacity .18s,transform .15s;-webkit-appearance:none;
+}
+#cbtn:hover,#cbtn:active{opacity:.86;transform:scale(.98)}
+#cbtn:disabled{opacity:.35;pointer-events:none}
+.spin{width:24px;height:24px;border:2px solid rgba(0,229,176,.14);
+  border-top-color:var(--g);border-radius:50%;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.fixbox{
+  background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.18);
+  border-radius:7px;padding:7px 10px;
+  font-family:'Share Tech Mono',monospace;font-size:.58rem;line-height:1.7;
+  color:rgba(204,228,245,.62);max-width:180px;text-align:left;
+}
+.fixbox b{color:var(--g)}
+/* gesture pill */
+#gpill{
+  position:absolute;bottom:6px;left:50%;
+  transform:translateX(-50%) scale(.85);
+  z-index:10;border-radius:7px;padding:3px 11px;
+  font-family:'Share Tech Mono',monospace;font-size:.6rem;
+  border:1px solid var(--g);color:var(--g);
+  background:rgba(8,11,18,.93);box-shadow:var(--sg);
+  opacity:0;transition:opacity .2s,transform .2s;
+  white-space:nowrap;pointer-events:none;
+}
+#gpill.show{opacity:1;transform:translateX(-50%) scale(1)}
+#gpill.pp{border-color:var(--pu);color:var(--pu);box-shadow:var(--sp)}
+/* confidence */
+#cwrap{
+  position:absolute;bottom:24px;left:50%;transform:translateX(-50%);
+  z-index:10;display:flex;flex-direction:column;align-items:center;gap:2px;
+  pointer-events:none;opacity:0;transition:opacity .3s;
+}
+#cwrap.show{opacity:1}
+#cwrap label{font-family:'Share Tech Mono',monospace;font-size:.46rem;
+  color:rgba(0,229,176,.4);letter-spacing:.1em}
+#ctrack{width:60px;height:2px;background:rgba(0,229,176,.1);border-radius:100px;overflow:hidden}
+#cfill{height:100%;background:var(--g);border-radius:100px;transition:width .1s,background .2s}
+
+/* ── ROOM CONTROLS ── */
+#room-section{
+  flex-shrink:0;
+  display:flex;flex-direction:column;gap:0;
+  border-bottom:1px solid var(--bd);
+}
+.room-row{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 12px;
+  border-bottom:1px solid var(--bd);
+}
+.room-row:last-child{border-bottom:none}
+.rlabel{
+  font-family:'Share Tech Mono',monospace;font-size:.54rem;
+  letter-spacing:.12em;color:var(--sub);flex-shrink:0;
+  text-transform:uppercase;
+}
+#rcode{
+  flex:1;
+  font-family:'Share Tech Mono',monospace;font-size:.94rem;
+  letter-spacing:.22em;color:var(--y);font-weight:700;
+  text-shadow:var(--sy);
+}
+.hb{
+  padding:6px 12px;border-radius:8px;
+  font-family:'Share Tech Mono',monospace;font-size:.6rem;
+  letter-spacing:.07em;cursor:pointer;border:1px solid;background:transparent;
+  transition:background .18s;white-space:nowrap;min-height:32px;
+  display:flex;align-items:center;-webkit-appearance:none;flex-shrink:0;
+}
+.hby{border-color:rgba(245,158,11,.4);color:var(--y)}.hby:hover,.hby:active{background:rgba(245,158,11,.1)}
+.hbw{border-color:var(--bd);color:var(--sub)}.hbw:hover,.hbw:active{background:rgba(0,229,176,.06)}
+.hbg{border-color:rgba(0,229,176,.35);color:var(--g)}.hbg:hover,.hbg:active{background:rgba(0,229,176,.1);box-shadow:var(--sg)}
+#jinp{
+  flex:1;
+  background:rgba(0,229,176,.04);border:1px solid var(--bd);border-radius:8px;
+  padding:6px 10px;color:var(--tx);
+  font-family:'Share Tech Mono',monospace;font-size:.78rem;letter-spacing:.16em;
+  outline:none;text-transform:uppercase;transition:border-color .2s;
+  min-height:32px;-webkit-appearance:none;
+}
+#jinp:focus{border-color:rgba(0,229,176,.4)}
+#jinp::placeholder{color:rgba(204,228,245,.2);font-size:.65rem;letter-spacing:.08em}
+
+/* send row */
+.send-row{
+  display:flex;align-items:stretch;gap:6px;
+  padding:7px 12px;
+  border-top:1px solid var(--bd);
+}
+#sendinp{
+  flex:1;background:rgba(0,229,176,.04);border:1px solid var(--bd);
+  border-radius:8px;padding:6px 10px;color:var(--tx);
+  font-family:'DM Sans',sans-serif;font-size:.78rem;
+  outline:none;resize:none;height:34px;transition:border-color .2s;
+  -webkit-appearance:none;display:flex;align-items:center;
+}
+#sendinp:focus{border-color:rgba(0,229,176,.35)}
+#sendinp::placeholder{color:rgba(204,228,245,.22)}
+#sendbtn{
+  padding:0 12px;background:rgba(0,229,176,.08);
+  border:1px solid rgba(0,229,176,.25);border-radius:8px;
+  color:var(--g);font-family:'Share Tech Mono',monospace;
+  font-size:.58rem;letter-spacing:.07em;cursor:pointer;
+  transition:background .18s;flex-shrink:0;white-space:nowrap;
+  -webkit-appearance:none;
+}
+#sendbtn:hover,#sendbtn:active{background:rgba(0,229,176,.16)}
+
+/* ── CLIPBOARD SECTION ── */
+#clip-section{
+  flex:1;overflow:hidden;
+  display:flex;flex-direction:column;
+  min-height:0;
+}
+#clip-head{
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px 6px;
+  border-bottom:1px solid var(--bd);
+}
+.clip-title{font-size:.6rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--sub)}
+.clip-meta{display:flex;gap:5px;align-items:center}
+.tag{font-family:'Share Tech Mono',monospace;font-size:.54rem;letter-spacing:.07em;
+  padding:2px 7px;border-radius:100px}
+.tgg{border:1px solid rgba(0,229,176,.2);color:var(--g);background:rgba(0,229,176,.06)}
+#cards{
+  flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:8px;display:flex;flex-direction:column;gap:6px;
+}
+#cards::-webkit-scrollbar{width:4px}
+#cards::-webkit-scrollbar-track{background:transparent}
+#cards::-webkit-scrollbar-thumb{background:rgba(0,229,176,.14);border-radius:100px}
+#empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:7px;flex:1;color:var(--sub);font-size:.72rem;text-align:center;
+  padding:20px;line-height:1.65;
+}
+#empty .eico{font-size:1.6rem;opacity:.22}
+
+/* CARDS */
+.card{
+  background:rgba(16,22,40,.9);border:1px solid var(--bd);border-radius:10px;
+  padding:9px 11px;cursor:grab;
+  transition:border-color .15s,box-shadow .15s,transform .1s;
+  position:relative;user-select:none;flex-shrink:0;
+  -webkit-user-select:none;
+}
+.card:hover{border-color:rgba(0,229,176,.28);box-shadow:0 3px 16px rgba(0,0,0,.28);transform:translateY(-1px)}
+.card.dragging{opacity:.42;cursor:grabbing;transform:scale(.96)}
+.card.fresh{animation:cpop .3s ease}
+@keyframes cpop{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+.ctxt{
+  font-size:.8rem;line-height:1.5;color:var(--tx);margin-bottom:7px;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;
+  overflow:hidden;word-break:break-word;
+}
+.cmeta{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.cdev{font-family:'Share Tech Mono',monospace;font-size:.54rem;color:var(--sub)}
+.cdev.remote{color:rgba(245,158,11,.65)}
+.ctime{font-family:'Share Tech Mono',monospace;font-size:.5rem;color:rgba(204,228,245,.2)}
+.cacts{display:flex;gap:4px}
+.ca{
+  padding:4px 10px;border-radius:6px;
+  font-family:'Share Tech Mono',monospace;font-size:.56rem;letter-spacing:.05em;
+  cursor:pointer;border:1px solid;background:transparent;
+  transition:background .15s;min-height:28px;
+  display:flex;align-items:center;-webkit-appearance:none;
+}
+.cag{border-color:rgba(0,229,176,.22);color:var(--g)}.cag:hover,.cag:active{background:rgba(0,229,176,.1)}
+.car{border-color:rgba(239,68,68,.18);color:rgba(239,68,68,.5)}.car:hover,.car:active{background:rgba(239,68,68,.08)}
+.dh{position:absolute;top:8px;right:8px;font-size:.6rem;opacity:0;color:var(--sub);
+  transition:opacity .2s;pointer-events:none}
+.card:hover .dh{opacity:.4}
+
+/* ═══════════════════════════════════
+   GESTURE CURSOR (floats over editor)
+═══════════════════════════════════ */
+#gcursor{
+  position:absolute;z-index:50;pointer-events:none;
+  width:22px;height:22px;border-radius:50%;
+  margin-left:-11px;margin-top:-11px;
+  display:none;transition:border-color .08s,background .08s;
+}
+#gcursor.gc-none {
+  display:block;background:transparent;
+  border:2px solid rgba(0,229,176,.55);
+}
+#gcursor.gc-pinch{
+  display:block;background:rgba(0,229,176,.35);
+  border:2px solid var(--g);box-shadow:var(--sg);
+  transform:scale(.68);
+}
+#gcursor.gc-point{
+  display:block;background:transparent;
+  border:2.5px solid var(--y);box-shadow:var(--sy);
+}
+#gcursor.gc-point::after{
+  content:'';position:absolute;inset:5px;
+  border-radius:50%;background:var(--y);opacity:.7;
+}
+#gcursor.gc-fist{
+  display:block;background:rgba(239,68,68,.28);
+  border:2px solid var(--r);width:28px;height:28px;
+  margin-left:-14px;margin-top:-14px;
+}
+#gcursor.gc-palm{
+  display:block;background:rgba(168,85,247,.28);
+  border:2px solid var(--pu);box-shadow:var(--sp);
+  width:30px;height:30px;margin-left:-15px;margin-top:-15px;
+}
+#gcursor.gc-grab{
+  display:block;background:rgba(245,158,11,.28);
+  border:2px solid var(--y);box-shadow:var(--sy);
+  width:28px;height:28px;margin-left:-14px;margin-top:-14px;
+}
+/* ripple on action */
+@keyframes gcripple{0%{opacity:.7;transform:scale(1)}100%{opacity:0;transform:scale(2.2)}}
+.gc-ripple{
+  position:absolute;inset:-4px;border-radius:50%;
+  border:1.5px solid currentColor;
+  animation:gcripple .5s ease forwards;pointer-events:none;
+}
+
+/* DRAG GHOST */
+#gdrag-ghost{
+  position:fixed;z-index:9990;pointer-events:none;display:none;
+  background:rgba(14,20,38,.96);border:1.5px solid var(--pu);
+  border-radius:10px;padding:8px 14px;
+  font-family:'DM Sans',sans-serif;font-size:.78rem;color:var(--tx);
+  max-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.55),var(--sp);
+  opacity:.9;transform:translate(-50%,-60%);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#gdrag-ghost.show{display:block}
+#gdrag-ghost::before{
+  content:'✊ ';font-size:.8rem;
+}
+
+/* GESTURE HUD (inside right panel, below cam) */
+#ghud{
+  flex-shrink:0;padding:6px 8px;
+  display:grid;grid-template-columns:1fr 1fr;gap:2px;
+  border-bottom:1px solid var(--bd);
+  background:rgba(8,11,18,.5);
+}
+.gr{
+  display:flex;align-items:center;gap:5px;
+  font-family:'Share Tech Mono',monospace;font-size:.5rem;
+  letter-spacing:.04em;color:rgba(204,228,245,.28);
+  padding:3px 5px;border-radius:5px;
+  transition:background .2s,color .2s;border:1px solid transparent;
+}
+.gr.on-g { color:var(--g);background:rgba(0,229,176,.08);border-color:rgba(0,229,176,.18) }
+.gr.on-y { color:var(--y);background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.18) }
+.gr.on-r { color:var(--r);background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.18) }
+.gr.on-p { color:var(--pu);background:rgba(168,85,247,.08);border-color:rgba(168,85,247,.18) }
+.gr-ico{font-size:.85rem;flex-shrink:0}
+.gr-txt b{display:block;font-size:.48rem;color:inherit;opacity:.7}
+
+/* textarea selection glow */
+#ed.gesture-selecting{box-shadow:inset 0 0 0 2px rgba(245,158,11,.3)}
+
+/* ═══════════════════════════════════
+   TOASTS
+═══════════════════════════════════ */
+#toasts{
+  position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+  z-index:9999;display:flex;flex-direction:column;align-items:center;
+  gap:6px;pointer-events:none;width:calc(100% - 32px);max-width:360px;
+}
+.toast{
+  padding:8px 18px;border-radius:9px;
+  font-family:'Share Tech Mono',monospace;font-size:.68rem;letter-spacing:.06em;
+  white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;
+  animation:tin .22s ease,tout .3s ease 2s forwards;
+}
+.tg2{background:rgba(0,229,176,.1);border:1px solid var(--g);color:var(--g);box-shadow:var(--sg)}
+.tpu{background:rgba(168,85,247,.1);border:1px solid var(--pu);color:var(--pu);box-shadow:var(--sp)}
+.ty2{background:rgba(245,158,11,.1);border:1px solid var(--y);color:var(--y);box-shadow:var(--sy)}
+@keyframes tin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tout{to{opacity:0;transform:translateY(4px)}}
+@keyframes pulse{0%,100%{opacity:.32}50%{opacity:1}}
+.syncing{animation:pulse .9s ease infinite}
+
+/* ═══════════════════════════════════
+   MOBILE BLOCKER
+═══════════════════════════════════ */
+#mob-block{
+  display:none;
+  position:fixed;inset:0;z-index:99999;
+  background:var(--bg);
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:20px;padding:36px 28px;text-align:center;
+}
+#mob-block::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(0,229,176,.014) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,229,176,.014) 1px,transparent 1px);
+  background-size:44px 44px;
+}
+.mb-icon{font-size:3.2rem;filter:drop-shadow(0 0 12px rgba(0,229,176,.3))}
+.mb-title{
+  font-size:1.15rem;font-weight:700;
+  color:var(--g);text-shadow:var(--sg);letter-spacing:.06em;
+  font-family:'DM Sans',sans-serif;
+}
+.mb-desc{
+  font-size:.84rem;color:var(--sub);line-height:1.75;max-width:270px;
+}
+.mb-box{
+  background:rgba(0,229,176,.05);
+  border:1px solid var(--bd);border-radius:10px;
+  padding:12px 20px;
+  display:flex;flex-direction:column;gap:4px;align-items:center;
+}
+.mb-box-label{
+  font-family:'Share Tech Mono',monospace;font-size:.56rem;
+  letter-spacing:.16em;color:rgba(204,228,245,.35);text-transform:uppercase;
+}
+.mb-box-url{
+  font-family:'Share Tech Mono',monospace;font-size:.78rem;
+  letter-spacing:.08em;color:var(--g);text-shadow:var(--sg);
+  word-break:break-all;
+}
+.mb-hint{
+  font-family:'Share Tech Mono',monospace;font-size:.6rem;
+  letter-spacing:.1em;color:rgba(204,228,245,.25);
+}
+
+@media(max-width:900px){
+  #mob-block{display:flex}
+}
+
+/* hidden on desktop */
+#mobtabs{display:none}
+</style>
+</head>
+<body>
+<div id="toasts"></div>
+<div id="gdrag-ghost"></div>
+
+<!-- MOBILE BLOCKER -->
+<div id="mob-block">
+  <div class="mb-icon">🖥️</div>
+  <div class="mb-title">Desktop Required</div>
+  <p class="mb-desc">GestureClip uses hand gesture tracking and a multi-panel layout that needs a larger screen to work properly.</p>
+  <div class="mb-box">
+    <span class="mb-box-label">Open this page on your computer</span>
+    <span class="mb-box-url" id="mb-url"></span>
+  </div>
+  <span class="mb-hint">WORKS BEST ON LAPTOP OR DESKTOP</span>
+</div>
+
+<div id="app">
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="gem">✦</div>
+      <h1>GestureClip</h1>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="dot" id="dcam"></div><span id="scam">CAM</span></div>
+      <div class="stat"><div class="dot" id="dhand"></div><span id="shand">HAND</span></div>
+      <div class="stat"><div class="dot" id="dsync"></div><span id="ssync">SYNC</span></div>
+    </div>
+  </header>
+
+  <!-- BODY -->
+  <div id="body">
+
+    <!-- LEFT: EDITOR -->
+    <div id="left" class="mob-active">
+      <div class="panel-head">
+        <span class="panel-title">📝 Editor</span>
+        <span class="panel-tag" id="edtag">drag cards here to paste</span>
+      </div>
+      <div id="dz">
+        <textarea id="ed" spellcheck="false">← Drag clipboard cards here to paste.
+
+Gesture controls (enable camera first):
+🤏 Pinch        — place cursor in editor
+☝️  Point + hold — select text
+✊ Fist          — copy selection
+✊ Fist + hold   — drag a clipboard card
+✋ Palm          — paste at cursor
+
+Try selecting this line and using gestures:
+The quick brown fox jumps over the lazy dog.
+Pack my box with five dozen liquor jugs.
+</textarea>
+        <div id="gcursor"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: CAMERA + CONTROLS + CLIPBOARD -->
+    <div id="right">
+
+      <!-- CAM SECTION: toggle button + video feed side by side -->
+      <div id="cam-section">
+        <!-- On/Off toggle column -->
+        <div id="cam-ctrl">
+          <button id="camtoggle" onclick="toggleCam()" title="Turn camera on/off">⏻</button>
+          <span class="ctrl-label">camera</span>
+        </div>
+        <!-- Video feed -->
+        <div id="cam-view">
+          <div class="camov" id="permov">
+            <div class="ico">📷</div>
+            <h3>Enable Camera</h3>
+            <p>Gesture copy &amp; paste across devices.</p>
+            <button id="cbtn" onclick="startCam()">Enable Camera</button>
+          </div>
+          <div class="camov" id="loadov" style="display:none">
+            <div class="spin"></div>
+          </div>
+          <div class="camov" id="denyov" style="display:none">
+            <div class="ico">🚫</div>
+            <h3 style="color:var(--r)">Denied</h3>
+            <div class="fixbox" id="fixbox"></div>
+            <button class="hb hbw" style="padding:4px 12px;margin-top:3px" onclick="retryCam()">↺ Retry</button>
+          </div>
+          <video id="camvid" playsinline autoplay muted></video>
+          <canvas id="hcvs"></canvas>
+          <div id="camflash"></div>
+          <div class="bk"><span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span></div>
+          <div id="cwrap"><label>CONFIDENCE</label><div id="ctrack"><div id="cfill"></div></div></div>
+          <div id="gpill">🤏 PINCH → SEND</div>
+        </div>
+      </div>
+
+      <!-- GESTURE HUD -->
+      <div id="ghud">
+        <div class="gr" id="gr-pinch"><span class="gr-ico">🤏</span><span class="gr-txt">Pinch<b>Place cursor</b></span></div>
+        <div class="gr" id="gr-point"><span class="gr-ico">☝️</span><span class="gr-txt">Point+hold<b>Select text</b></span></div>
+        <div class="gr" id="gr-fist"><span class="gr-ico">✊</span><span class="gr-txt">Fist<b>Copy</b></span></div>
+        <div class="gr" id="gr-grab"><span class="gr-ico">✊</span><span class="gr-txt">Fist+hold<b>Drag card</b></span></div>
+        <div class="gr" id="gr-palm"><span class="gr-ico">✋</span><span class="gr-txt">Palm<b>Paste here</b></span></div>
+      </div>
+
+      <!-- ROOM CONTROLS -->
+      <div id="room-section">
+        <!-- Row 1: Room code + copy -->
+        <div class="room-row">
+          <span class="rlabel">Room</span>
+          <span id="rcode">——————</span>
+          <button class="hb hby" onclick="copyCode()">⎘ Copy</button>
+          <button class="hb hbw" onclick="newRoom()">+ New</button>
+        </div>
+        <!-- Row 2: Join input -->
+        <div class="room-row">
+          <input id="jinp" maxlength="6" placeholder="Enter room code"
+            oninput="this.value=this.value.toUpperCase()"
+            onkeydown="if(event.key==='Enter')joinRoom()">
+          <button class="hb hbg" onclick="joinRoom()">Join →</button>
+        </div>
+        <!-- Row 3: Send text -->
+        <div class="send-row">
+          <textarea id="sendinp" placeholder="Type to send to all devices…"></textarea>
+          <button id="sendbtn" onclick="sendTyped()">⬆ Send</button>
+        </div>
+      </div>
+
+      <!-- CLIPBOARD -->
+      <div id="clip-section">
+        <div id="clip-head">
+          <span class="clip-title">📦 Shared Clipboard</span>
+          <div class="clip-meta">
+            <span class="tag tgg" id="icount">0 items</span>
+            <button class="hb hbw" style="font-size:.52rem;padding:2px 7px;min-height:24px" onclick="clearAll()">Clear</button>
+          </div>
+        </div>
+        <div id="cards">
+          <div id="empty">
+            <span class="eico">📋</span>
+            Nothing here yet.<br>
+            Copy text or use gestures,<br>
+            then share your Room Code!
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /#right -->
+  </div><!-- /#body -->
+
+  <!-- MOBILE TAB BAR -->
+  <nav id="mobtabs">
+    <button class="mbt on" id="tab-ed" onclick="mobTab('ed')">
+      <span class="mbi">📝</span>Editor
+    </button>
+    <button class="mbt" id="tab-clip" onclick="mobTab('clip')">
+      <span class="mbi">📦</span>Clipboard
+    </button>
+  </nav>
+</div>
+
+<script>
+// ── ELEMENTS ──
+const camvid   = document.getElementById('camvid');
+const hcvs     = document.getElementById('hcvs');
+const hctx     = hcvs.getContext('2d');
+const permov   = document.getElementById('permov');
+const loadov   = document.getElementById('loadov');
+const denyov   = document.getElementById('denyov');
+const gpill    = document.getElementById('gpill');
+const cwrap    = document.getElementById('cwrap');
+const cfill    = document.getElementById('cfill');
+const camflash = document.getElementById('camflash');
+const dcam     = document.getElementById('dcam');
+const dhand    = document.getElementById('dhand');
+const dsync    = document.getElementById('dsync');
+const scam     = document.getElementById('scam');
+const shand    = document.getElementById('shand');
+const ssync    = document.getElementById('ssync');
+const ed       = document.getElementById('ed');
+const cardsEl  = document.getElementById('cards');
+const emptyEl  = document.getElementById('empty');
+const icount   = document.getElementById('icount');
+const toasts   = document.getElementById('toasts');
+const dz       = document.getElementById('dz');
+const rcodeEl  = document.getElementById('rcode');
+
+let roomCode='', deviceId='', roomRef=null;
+let items={}, pillTimer=null, lastGTs=0, lastG=null;
+let camStream=null, camRunning=false;
+const COOL=1500, MAX=25;
+
+const gun = GUN(['https://gun-manhattan.herokuapp.com/gun','https://gun-us.herokuapp.com/gun']);
+
+// ── HELPERS ──
+function rand(n){ return Math.random().toString(36).substring(2,2+n).toUpperCase(); }
+function esc(s){ const d=document.createElement('div');d.textContent=s;return d.innerHTML; }
+function tstr(ts){
+  const d=new Date(ts);
+  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
+function isMob(){ return window.innerWidth<=600; }
+function toast(msg,cls='tg2'){
+  const el=document.createElement('div');
+  el.className='toast '+cls; el.textContent=msg;
+  toasts.appendChild(el); setTimeout(()=>el.remove(),2700);
+}
+
+// ── MOBILE TABS ──
+function mobTab(t){
+  const left=document.getElementById('left');
+  const right=document.getElementById('right');
+  if(t==='ed'){
+    left.classList.add('mob-active');
+    right.classList.remove('mob-active');
+    document.getElementById('tab-ed').classList.add('on');
+    document.getElementById('tab-clip').classList.remove('on');
+  } else {
+    right.classList.add('mob-active');
+    left.classList.remove('mob-active');
+    document.getElementById('tab-clip').classList.add('on');
+    document.getElementById('tab-ed').classList.remove('on');
+  }
+}
+
+// ── ROOM ──
+function setupRoom(code){
+  if(roomRef) roomRef.off();
+  roomCode=code; deviceId=rand(8);
+  rcodeEl.textContent=code;
+  ssync.textContent=code; dsync.className='dot dy syncing';
+  items={};
+  cardsEl.querySelectorAll('.card').forEach(c=>c.remove());
+  renderEmpty();
+  roomRef=gun.get('gestureclip_v2_'+code).get('items');
+  roomRef.map().on(function(data,key){
+    if(!data||data===null) return;
+    if(data._del){ if(items[key]){delete items[key];renderCards();} return; }
+    if(!data.text||!data.ts) return;
+    const isNew=!items[key];
+    const isRemote=data.device&&data.device!==deviceId;
+    items[key]=data;
+    renderCards(isNew?key:null, isNew&&isRemote);
+  });
+  setTimeout(()=>dsync.className='dot dy',1500);
+}
+
+function newRoom(){
+  if(Object.keys(items).length>0&&!confirm('Create new room?')) return;
+  setupRoom(rand(6));
+  toast('🔑 New room created','ty2');
+}
+
+function joinRoom(){
+  const v=document.getElementById('jinp').value.trim().toUpperCase();
+  if(v.length<4){ toast('Enter a valid code','tpu'); return; }
+  document.getElementById('jinp').value='';
+  setupRoom(v);
+  toast('🔗 Joined room '+v,'ty2');
+}
+
+function copyCode(){
+  navigator.clipboard?.writeText(roomCode).catch(()=>{});
+  toast('Copied: '+roomCode,'ty2');
+}
+
+// ── SEND ──
+function sendItem(text){
+  if(!text||!text.trim()) return;
+  const key='i'+Date.now()+rand(4);
+  roomRef.get(key).put({id:key,text:text.trim(),ts:Date.now(),device:deviceId,_del:false});
+  dsync.className='dot dy syncing';
+  setTimeout(()=>dsync.className='dot dy',800);
+}
+
+function sendTyped(){
+  const v=document.getElementById('sendinp').value.trim();
+  if(!v){ toast('Type something first','tpu'); return; }
+  sendItem(v);
+  document.getElementById('sendinp').value='';
+  toast('⬆ Sent to all devices','tg2');
+}
+
+// ── RENDER ──
+function renderEmpty(){
+  const list=Object.values(items).filter(i=>i.text&&!i._del);
+  emptyEl.style.display=list.length?'none':'flex';
+  icount.textContent=list.length+' item'+(list.length===1?'':'s');
+}
+
+function renderCards(newKey,isRemoteNew){
+  const list=Object.values(items).filter(i=>i.text&&!i._del).sort((a,b)=>b.ts-a.ts).slice(0,MAX);
+  emptyEl.style.display=list.length?'none':'flex';
+  icount.textContent=list.length+' item'+(list.length===1?'':'s');
+  if(newKey&&!cardsEl.querySelector('[data-id="'+newKey+'"]')){
+    const item=items[newKey];
+    if(!item||!item.text) return;
+    const card=makeCard(item);
+    card.classList.add('fresh');
+    const first=cardsEl.querySelector('.card');
+    if(first) cardsEl.insertBefore(card,first); else cardsEl.appendChild(card);
+    if(isRemoteNew) toast('📥 New item from another device','ty2');
+  }
+  cardsEl.querySelectorAll('.card').forEach(el=>{
+    const id=el.dataset.id;
+    if(!items[id]||items[id]._del||!items[id].text) el.remove();
+  });
+}
+
+function makeCard(item){
+  const card=document.createElement('div');
+  const isMe=item.device===deviceId;
+  card.className='card'; card.dataset.id=item.id; card.draggable=true;
+  card.innerHTML=
+    '<div class="dh">⠿</div>'+
+    '<div class="ctxt">'+esc(item.text)+'</div>'+
+    '<div class="cmeta">'+
+      '<span class="cdev'+(isMe?'':' remote')+'">'+(isMe?'💻 this device':'📡 remote')+'</span>'+
+      '<span class="ctime">'+tstr(item.ts)+'</span>'+
+    '</div>'+
+    '<div class="cacts">'+
+      '<button class="ca cag" onclick="pasteItem(\''+item.id+'\')">↓ Paste</button>'+
+      '<button class="ca car" onclick="deleteItem(\''+item.id+'\')">✕</button>'+
+    '</div>';
+  card.addEventListener('dragstart',e=>{
+    e.dataTransfer.setData('text/plain',item.text);
+    card.classList.add('dragging');
+  });
+  card.addEventListener('dragend',()=>card.classList.remove('dragging'));
+  return card;
+}
+
+function pasteItem(id){
+  const item=items[id];
+  if(!item) return;
+  pasteToEditor(item.text);
+  if(isMob()) mobTab('ed');
+}
+
+function deleteItem(id){
+  const item=items[id];
+  if(!item) return;
+  roomRef.get(id).put({id,text:'',ts:Date.now(),device:deviceId,_del:true});
+  delete items[id];
+  cardsEl.querySelector('[data-id="'+id+'"]')?.remove();
+  renderEmpty();
+}
+
+function clearAll(){
+  if(!Object.keys(items).length) return;
+  if(!confirm('Clear all items in room '+roomCode+'?')) return;
+  Object.keys(items).forEach(k=>{
+    roomRef.get(k).put({id:k,text:'',ts:Date.now(),device:deviceId,_del:true});
+  });
+  items={}; cardsEl.querySelectorAll('.card').forEach(c=>c.remove()); renderEmpty();
+}
+
+// ── DRAG & DROP ──
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+dz.addEventListener('drop',e=>{
+  e.preventDefault(); dz.classList.remove('over');
+  const t=e.dataTransfer.getData('text/plain');
+  if(t) pasteToEditor(t);
+});
+
+function pasteToEditor(text){
+  const s=ed.selectionStart??ed.value.length;
+  const e2=ed.selectionEnd??s;
+  ed.value=ed.value.substring(0,s)+text+ed.value.substring(e2);
+  ed.selectionStart=ed.selectionEnd=s+text.length;
+  ed.focus();
+  dz.style.background='rgba(168,85,247,.04)';
+  setTimeout(()=>dz.style.background='',500);
+  toast('✋ Pasted!','tpu');
+}
+
+// ══════════════════════════════════════
+// GESTURE POINTER SYSTEM — 5 gestures
+// ══════════════════════════════════════
+const gcursor    = document.getElementById('gcursor');
+const gdragGhost = document.getElementById('gdrag-ghost');
+
+// HUD rows
+const gr = {
+  pinch: document.getElementById('gr-pinch'),
+  point: document.getElementById('gr-point'),
+  fist:  document.getElementById('gr-fist'),
+  grab:  document.getElementById('gr-grab'),
+  palm:  document.getElementById('gr-palm'),
+};
+const GR_COLOR = { pinch:'on-g', point:'on-y', fist:'on-r', grab:'on-y', palm:'on-p' };
+
+function setHud(active) {
+  Object.entries(gr).forEach(([k,el])=>{
+    if(el) el.className = 'gr' + (k===active ? ' '+GR_COLOR[k] : '');
+  });
+}
+
+// State
+let gState      = 'NONE';
+let gHoldStart  = 0;
+let gCaretPos   = 0;       // last cursor pos from pinch
+let gSelectAnchor = -1;    // char offset where POINT selection started
+let gDragId     = null;    // id of card being gesture-dragged
+const G_DRAG_MS = 850;     // hold time to trigger drag
+
+// ── MAP hand landmark to editor screen coords ──
+function tipToScreen(tip) {
+  const r = ed.getBoundingClientRect();
+  // Camera is mirrored → flip x
+  return {
+    x: r.left + (1 - tip.x) * r.width,
+    y: r.top  + tip.y        * r.height,
+  };
+}
+
+// ── Place textarea caret at screen position ──
+function placeCaretAt(x, y) {
+  const r = ed.getBoundingClientRect();
+  if (x < r.left || x > r.right || y < r.top || y > r.bottom) return;
+  ed.focus();
+  ed.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,clientX:x,clientY:y}));
+  gCaretPos = ed.selectionStart;
+}
+
+// ── Extend selection from anchor to current pointer pos ──
+function extendSelection(x, y) {
+  if (gSelectAnchor < 0) return;
+  const r = ed.getBoundingClientRect();
+  const cx = Math.max(r.left+1, Math.min(r.right-1, x));
+  const cy = Math.max(r.top+1,  Math.min(r.bottom-1, y));
+  ed.focus();
+  // Temporarily click to get offset
+  ed.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,clientX:cx,clientY:cy}));
+  const endPos = ed.selectionStart;
+  const s = Math.min(gSelectAnchor, endPos);
+  const e = Math.max(gSelectAnchor, endPos);
+  ed.setSelectionRange(s, e);
+}
+
+// ── Visual cursor over editor ──
+function moveCursor(x, y, cls) {
+  const r = ed.getBoundingClientRect();
+  if (!r.width) { gcursor.className=''; return; }
+  const lx = Math.max(0, Math.min(r.width,  x - r.left));
+  const ly = Math.max(0, Math.min(r.height, y - r.top));
+  gcursor.style.left = lx + 'px';
+  gcursor.style.top  = ly + 'px';
+  gcursor.className  = cls;
+}
+
+// ── Ripple on gesture trigger ──
+function rippleCursor() {
+  const rp = document.createElement('div');
+  rp.className = 'gc-ripple';
+  gcursor.appendChild(rp);
+  setTimeout(() => rp.remove(), 600);
+}
+
+// ── Find card element at screen point ──
+function cardAtPoint(x, y) {
+  const els = document.elementsFromPoint(x, y);
+  for (const el of els) {
+    const c = el.closest?.('.card');
+    if (c?.dataset.id) return c.dataset.id;
+  }
+  return null;
+}
+
+// ── Start dragging a card ──
+function startDrag(id, x, y) {
+  const item = items[id];
+  if (!item) return;
+  gDragId = id;
+  gdragGhost.textContent = item.text.slice(0,40) + (item.text.length>40?'…':'');
+  gdragGhost.classList.add('show');
+  gdragGhost.style.left = x+'px';
+  gdragGhost.style.top  = y+'px';
+  showPill('✊ DRAG TO EDITOR',false);
+}
+
+// ── End drag ──
+function endDrag(x, y) {
+  const item = gDragId ? items[gDragId] : null;
+  gdragGhost.classList.remove('show');
+  if (item) {
+    const r = ed.getBoundingClientRect();
+    if (x>=r.left && x<=r.right && y>=r.top && y<=r.bottom) {
+      placeCaretAt(x, y);
+      pasteToEditor(item.text);
+      toast('✊ Dropped!','ty2');
+    } else {
+      toast('✊ Drag cancelled','ty2');
+    }
+  }
+  gDragId = null;
+}
+
+// ── COPY ──
+function gestCopy() {
+  const s = ed.selectionStart, e2 = ed.selectionEnd;
+  const text = s !== e2 ? ed.value.substring(s,e2) : (window.getSelection()?.toString()||'');
+  if (!text) { toast('⚠ Select text first (☝️ gesture)','tpu'); return; }
+  sendItem(text);
+  doFlash('fg');
+  showPill('✊ COPIED + SENT!',false);
+  toast('✊ Copied to room','tg2');
+}
+
+// ── PASTE ──
+function gestPaste() {
+  const latest = Object.values(items).filter(i=>i.text&&!i._del).sort((a,b)=>b.ts-a.ts)[0];
+  if (!latest) { toast('⚠ Nothing in clipboard','tpu'); return; }
+  pasteToEditor(latest.text);
+  doFlash('fp');
+  showPill('✋ PASTED!',true);
+}
+
+function doFlash(c){ camflash.className=c; setTimeout(()=>camflash.className='',550); }
+function showPill(msg,p){
+  gpill.textContent=msg; gpill.className='show'+(p?' pp':'');
+  clearTimeout(pillTimer); pillTimer=setTimeout(()=>{gpill.className='';pillTimer=null;},1800);
+}
+
+// ══════════════════════════════════════
+// GESTURE DETECTION — 5 shapes
+// ══════════════════════════════════════
+function dist(a,b){ return Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2); }
+
+function detect(lm) {
+  const sc = dist(lm[0], lm[9]) || 0.1;
+
+  // 1) PINCH 🤏: thumb tip + index tip close
+  const pd = dist(lm[4], lm[8]) / sc;
+  if (pd < 0.32) return { name:'PINCH', conf:Math.min(1,(0.32-pd)/0.32), tip:lm[8] };
+
+  // Finger extension: tip.y < pip.y means finger is up
+  const ext = [
+    lm[8].y  < lm[6].y,   // index
+    lm[12].y < lm[10].y,  // middle
+    lm[16].y < lm[14].y,  // ring
+    lm[20].y < lm[18].y,  // pinky
+  ];
+  const n = ext.filter(Boolean).length;
+
+  // 2) POINT ☝️: only index extended
+  if (ext[0] && !ext[1] && !ext[2] && !ext[3])
+    return { name:'POINT', conf:0.88, tip:lm[8] };
+
+  // 3) PALM ✋: all 4 extended
+  if (n >= 4)
+    return { name:'PALM', conf:n/4, tip:lm[9] };
+
+  // 4) FIST ✊: all 4 curled
+  if (n === 0)
+    return { name:'FIST', conf:0.85, tip:lm[9] };
+
+  return null;
+}
+
+// ══════════════════════════════════════
+// onResults — hand tracking callback
+// ══════════════════════════════════════
+function onResults(res) {
+  hcvs.width  = camvid.videoWidth  || hcvs.offsetWidth;
+  hcvs.height = camvid.videoHeight || hcvs.offsetHeight;
+  hctx.clearRect(0,0,hcvs.width,hcvs.height);
+
+  if (!res.multiHandLandmarks?.length) {
+    dhand.className='dot'; shand.textContent='HAND';
+    cwrap.className='';
+    if (!pillTimer) gpill.className='';
+    gcursor.className='';
+    // Clean up if hand lost mid-gesture
+    if (gState==='POINT') { ed.classList.remove('gesture-selecting'); gSelectAnchor=-1; }
+    if (gState==='FIST' && gDragId) endDrag(-999,-999);
+    gState='NONE'; setHud(null);
+    return;
+  }
+
+  dhand.className='dot dp'; shand.textContent='DETECTED';
+  const lm = res.multiHandLandmarks[0];
+
+  // Draw skeleton
+  drawConnectors(hctx,lm,HAND_CONNECTIONS,{color:'rgba(0,229,176,.32)',lineWidth:1.5});
+  drawLandmarks(hctx,lm,{color:'rgba(0,229,176,.85)',fillColor:'rgba(0,0,0,.4)',
+    lineWidth:1, radius:d=>(d.index===4||d.index===8)?6:3});
+
+  const det  = detect(lm);
+  const conf = det ? det.conf : 0;
+  const tip  = det ? det.tip : lm[8];
+  const { x:sx, y:sy } = tipToScreen(tip);
+  const now  = Date.now();
+  const newG = det ? det.name : 'NONE';
+
+  // Confidence bar
+  cwrap.className = conf > 0.18 ? 'show' : '';
+  cfill.style.width = (conf*100)+'%';
+  const barCol = {PINCH:'var(--g)',POINT:'var(--y)',FIST:'var(--r)',PALM:'var(--pu)'}[newG]||'var(--g)';
+  cfill.style.background = barCol;
+
+  // Visual cursor over editor
+  const curCls = {PINCH:'gc-pinch',POINT:'gc-point',FIST:(gDragId?'gc-grab':'gc-fist'),PALM:'gc-palm'}[newG]||'gc-none';
+  moveCursor(sx, sy, curCls);
+
+  // ── GESTURE STATE MACHINE ──
+  if (newG !== gState) {
+    const prev = gState;
+    const holdMs = now - gHoldStart;
+
+    // ── EXIT previous state ──
+    if (prev === 'POINT') {
+      ed.classList.remove('gesture-selecting');
+      gSelectAnchor = -1;
+    }
+    if (prev === 'FIST') {
+      if (gDragId) {
+        endDrag(sx, sy);
+      } else if (holdMs < G_DRAG_MS) {
+        // Quick fist release = COPY
+        gestCopy();
+        rippleCursor();
+      }
+    }
+
+    // ── ENTER new state ──
+    gState = newG;
+    gHoldStart = now;
+    gDragId = gDragId && newG==='FIST' ? gDragId : null; // keep drag if still fist
+
+    if (newG === 'PINCH') {
+      placeCaretAt(sx, sy);
+      rippleCursor();
+      setHud('pinch');
+      showPill('🤏 CURSOR PLACED', false);
+    }
+    else if (newG === 'POINT') {
+      // Start selection at current caret
+      gSelectAnchor = ed.selectionStart !== ed.selectionEnd ? ed.selectionStart : gCaretPos;
+      ed.classList.add('gesture-selecting');
+      setHud('point');
+      showPill('☝️ SELECTING…', false);
+    }
+    else if (newG === 'PALM') {
+      gestPaste();
+      rippleCursor();
+      setHud('palm');
+    }
+    else if (newG === 'FIST') {
+      setHud('fist');
+      showPill('✊ HOLD TO DRAG CARD', false);
+    }
+    else {
+      setHud(null);
+    }
+
+  } else {
+    // ── SAME state — continuous update ──
+    const holdMs = now - gHoldStart;
+
+    if (gState === 'PINCH') {
+      // Continuous cursor move while pinching
+      placeCaretAt(sx, sy);
+      setHud('pinch');
+    }
+    else if (gState === 'POINT') {
+      extendSelection(sx, sy);
+      setHud('point');
+    }
+    else if (gState === 'FIST') {
+      if (gDragId) {
+        // Update ghost position
+        gdragGhost.style.left = sx+'px';
+        gdragGhost.style.top  = sy+'px';
+        setHud('grab');
+      } else if (holdMs >= G_DRAG_MS) {
+        // Try to grab a card
+        const cid = cardAtPoint(sx, sy);
+        if (cid) {
+          startDrag(cid, sx, sy);
+          setHud('grab');
+        } else {
+          showPill('✊ POINT AT A CARD', false);
+        }
+      }
+    }
+  }
+}
+
+// ── CAMERA ──
+async function startCam(){
+  const btn=document.getElementById('cbtn');
+  btn.disabled=true; btn.textContent='Requesting…';
+  permov.style.display='none'; loadov.style.display='flex';
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia(
+      {video:{width:{ideal:1280},height:{ideal:720},facingMode:'user'}});
+    camStream=stream; camvid.srcObject=stream; await camvid.play();
+    camRunning=true; dcam.className='dot dg'; scam.textContent='ON';
+    document.getElementById('camtoggle').classList.remove('camoff');
+    const hands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
+    hands.setOptions({maxNumHands:1,modelComplexity:1,minDetectionConfidence:.7,minTrackingConfidence:.55});
+    hands.onResults(onResults);
+    const cam=new Camera(camvid,{onFrame:async()=>await hands.send({image:camvid}),width:1280,height:720});
+    cam.start();
+    loadov.style.display='none';
+    toast('📷 Camera active — gestures enabled','tg2');
+  }catch(err){
+    loadov.style.display='none'; denyov.style.display='flex';
+    const ua=navigator.userAgent;
+    let fix='';
+    if(err.name==='NotAllowedError'||err.name==='PermissionDeniedError'){
+      if(/Chrome/.test(ua)&&!/Edg/.test(ua)) fix='<b>Chrome:</b> Click 🔒 → Camera → <b>Allow</b>';
+      else if(/Firefox/.test(ua)) fix='<b>Firefox:</b> Click camera icon → <b>Allow</b>';
+      else if(/Safari/.test(ua)) fix='<b>Safari:</b> Settings → Website → Camera → <b>Allow</b>';
+      else fix='Click 🔒 in address bar → Camera → <b>Allow</b>';
+    } else { fix='Camera unavailable: '+err.name; }
+    document.getElementById('fixbox').innerHTML=fix;
+    toast('Camera denied — type to send instead','ty2');
+  }
+}
+
+function retryCam(){
+  denyov.style.display='none'; permov.style.display='flex';
+  const btn=document.getElementById('cbtn');
+  btn.disabled=false; btn.textContent='Enable Camera';
+}
+
+function toggleCam(){
+  if(camRunning){
+    if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
+    camvid.srcObject=null; camRunning=false;
+    dcam.className='dot'; scam.textContent='CAM';
+    dhand.className='dot'; shand.textContent='HAND';
+    cwrap.className=''; gpill.className='';
+    hctx.clearRect(0,0,hcvs.width,hcvs.height);
+    permov.style.display='flex';
+    document.getElementById('camtoggle').classList.add('camoff');
+    toast('📷 Camera off','ty2');
+  } else {
+    document.getElementById('camtoggle').classList.remove('camoff');
+    startCam();
+  }
+}
+
+// ── BOOT ──
+const urlEl = document.getElementById('mb-url');
+if(urlEl) urlEl.textContent = location.href.length > 50 ? location.href.slice(0,50)+'…' : location.href;
+setupRoom(rand(6));
+</script>
+</body>
+</html>
