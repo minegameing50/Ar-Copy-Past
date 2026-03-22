@@ -25,10 +25,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     linear-gradient(90deg,rgba(0,229,176,.012) 1px,transparent 1px);
   background-size:54px 54px}
  
-/* ── APP ── */
+/* ══ LAYOUT ══ */
 #app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh}
- 
-/* ── HEADER ── */
 header{flex-shrink:0;height:50px;display:flex;align-items:center;padding:0 14px;gap:10px;
   border-bottom:1px solid var(--bd);background:rgba(8,11,18,.99)}
 .logo{display:flex;align-items:center;gap:8px}
@@ -42,292 +40,265 @@ header{flex-shrink:0;height:50px;display:flex;align-items:center;padding:0 14px;
 .dg{background:var(--g);box-shadow:0 0 5px var(--g)}
 .dp{background:var(--pu);box-shadow:0 0 5px var(--pu)}
 .dy{background:var(--y);box-shadow:0 0 5px var(--y)}
+#body{flex:1;min-height:0;display:flex;overflow:hidden}
  
-/* ── BODY: two columns ── */
-#body{flex:1;min-height:0;display:flex;flex-direction:row;overflow:hidden}
- 
-/* ── LEFT: EDITOR ── */
-#left{width:50%;flex-shrink:0;min-height:0;display:flex;flex-direction:column;
-  border-right:1px solid var(--bd);background:rgba(9,13,23,.6);overflow:hidden;
-  position:relative}
-.panel-head{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
-  padding:9px 14px 7px;border-bottom:1px solid var(--bd)}
-.panel-title{font-size:.6rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--sub)}
-.panel-tag{font-family:'Share Tech Mono',monospace;font-size:.54rem;letter-spacing:.07em;
+/* ══ LEFT: EDITOR ══ */
+#left{width:50%;flex-shrink:0;display:flex;flex-direction:column;
+  border-right:1px solid var(--bd);background:rgba(9,13,23,.6);overflow:hidden}
+.ph{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px 7px;border-bottom:1px solid var(--bd)}
+.ph-title{font-size:.6rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--sub)}
+.ph-tag{font-family:'Share Tech Mono',monospace;font-size:.52rem;letter-spacing:.07em;
   padding:2px 7px;border-radius:100px;border:1px solid rgba(168,85,247,.22);
   color:var(--pu);background:rgba(168,85,247,.06)}
- 
-/* Editor wrapper — relative for drop highlight */
 #ed-wrap{flex:1;position:relative}
-#ed-wrap.over{outline:2px solid rgba(168,85,247,.5);background:rgba(168,85,247,.03)}
-#ed-wrap.over::after{
-  content:'📌 Drop to insert at cursor';
-  position:absolute;bottom:0;left:0;right:0;
-  text-align:center;padding:5px;
-  font-family:'Share Tech Mono',monospace;font-size:.6rem;letter-spacing:.09em;
-  color:rgba(168,85,247,.8);background:rgba(168,85,247,.08);
-  border-top:1px solid rgba(168,85,247,.25);
-  pointer-events:none;
-}
+#ed-wrap.drag-over{background:rgba(168,85,247,.04);outline:2px solid rgba(168,85,247,.4)}
+#ed-wrap.drag-over::after{content:'📌 Drop to insert here';position:absolute;bottom:0;left:0;right:0;
+  text-align:center;padding:4px;font-family:'Share Tech Mono',monospace;font-size:.6rem;
+  color:rgba(168,85,247,.7);background:rgba(168,85,247,.08);
+  border-top:1px solid rgba(168,85,247,.2);pointer-events:none}
 #ed{position:absolute;inset:0;resize:none;background:transparent;border:none;outline:none;
   color:var(--tx);font-family:'DM Sans',sans-serif;font-size:.88rem;line-height:1.82;
   padding:16px 18px;caret-color:var(--g);z-index:1}
-#ed::selection{background:rgba(0,229,176,.18)}
-#ed.sel-active::selection{background:rgba(245,158,11,.3)}
+#ed::selection{background:rgba(0,229,176,.2)}
+#ed.sel-mode::selection{background:rgba(245,158,11,.3)}
  
-/* Gesture cursor — position:fixed so it covers the FULL viewport */
-#gcursor{
-  position:fixed;z-index:99990;pointer-events:none;
+/* ══ GLOBAL GESTURE CURSOR (fixed, whole screen) ══ */
+#gc{
+  position:fixed;z-index:99999;pointer-events:none;
   width:20px;height:20px;border-radius:50%;
   transform:translate(-50%,-50%);
   display:none;
-  transition:width .06s,height .06s,background .06s,border-color .06s;
+  transition:width .07s,height .07s;
 }
-#gcursor.vis    {display:block}
-#gcursor.c-two  {background:rgba(0,229,176,.12);border:2.5px solid var(--g);box-shadow:var(--sg)}
-#gcursor.c-grab {width:26px;height:26px;background:rgba(168,85,247,.22);border:2.5px solid var(--pu);box-shadow:var(--sp)}
-#gcursor.c-pinch{background:rgba(0,229,176,.35);border:2px solid var(--g);box-shadow:var(--sg)}
-#gcursor.c-point{background:transparent;border:2.5px solid var(--y);box-shadow:0 0 8px var(--y)}
-#gcursor.c-point::after{content:'';position:absolute;inset:4px;border-radius:50%;background:var(--y)}
-#gcursor.c-fist {width:24px;height:24px;background:rgba(239,68,68,.28);border:2px solid var(--r)}
-#gcursor.c-palm {width:26px;height:26px;background:rgba(168,85,247,.28);border:2px solid var(--pu);box-shadow:var(--sp)}
-/* Ripple ring */
-@keyframes gcpop{0%{opacity:.75;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.6)}}
-.gc-ring{position:absolute;inset:-3px;border-radius:50%;border:1.5px solid currentColor;animation:gcpop .5s ease forwards}
-/* Card hover highlight when gesture cursor is over it */
-.card.g-hover{border-color:var(--g)!important;box-shadow:0 0 0 2px rgba(0,229,176,.25),0 4px 20px rgba(0,0,0,.3)!important;transform:translateY(-2px)!important}
-.card.g-hover .ctxt{color:#fff}
+#gc.on  {display:block}
+#gc.two {background:rgba(0,229,176,.15);border:2.5px solid var(--g);box-shadow:var(--sg)}
+#gc.three{width:26px;height:26px;background:rgba(168,85,247,.2);border:2.5px solid var(--pu);box-shadow:var(--sp)}
+#gc.pinch{background:rgba(0,229,176,.35);border:2px solid var(--g);box-shadow:var(--sg)}
+#gc.point{background:transparent;border:2.5px solid var(--y);box-shadow:0 0 8px var(--y)}
+#gc.point::after{content:'';position:absolute;inset:4px;border-radius:50%;background:var(--y)}
+#gc.fist {width:24px;height:24px;background:rgba(239,68,68,.25);border:2px solid var(--r)}
+#gc.palm {width:26px;height:26px;background:rgba(168,85,247,.25);border:2px solid var(--pu);box-shadow:var(--sp)}
+@keyframes gcpop{0%{opacity:.8;transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(2.8)}}
+.gcring{position:absolute;inset:-4px;border-radius:50%;border:1.5px solid currentColor;
+  animation:gcpop .5s ease forwards;pointer-events:none}
  
-/* ── RIGHT: stacked sections ── */
-#right{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;
-  background:var(--sur);overflow:hidden;position:relative}
+/* Card hover highlight */
+.card.ghover{border-color:var(--g)!important;
+  box-shadow:0 0 0 2px rgba(0,229,176,.3),0 4px 18px rgba(0,0,0,.35)!important;
+  transform:translateY(-2px)!important}
  
-/* ── CAMERA PIP (floating card, top-right of right panel) ── */
-#cam-pip{
-  position:absolute;top:10px;right:10px;z-index:200;
-  width:160px;
-  background:rgba(8,11,18,.97);
-  border:1px solid var(--bd);border-radius:12px;
-  box-shadow:0 6px 28px rgba(0,0,0,.6),0 0 0 1px rgba(0,229,176,.06);
-  overflow:hidden;
-}
-#cam-pip.collapsed #cam-view{display:none}
-#cam-pip.collapsed #cam-ctrl-bar{border-bottom:none}
+/* Drag ghost */
+#ghost{position:fixed;z-index:99998;pointer-events:none;display:none;
+  background:rgba(10,16,32,.97);border:1.5px solid var(--pu);border-radius:10px;
+  padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:.8rem;color:var(--tx);
+  max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  box-shadow:0 8px 32px rgba(0,0,0,.6),var(--sp);transform:translate(-50%,-120%)}
+#ghost.on{display:block}
+#ghost::before{content:'📋 ';font-size:.75rem}
  
-/* pip top bar */
-#cam-ctrl-bar{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:5px 8px;border-bottom:1px solid var(--bd);
-  background:rgba(8,11,18,.9);
-}
-.pip-label{font-family:'Share Tech Mono',monospace;font-size:.5rem;
-  letter-spacing:.12em;color:var(--sub);text-transform:uppercase}
-.pip-btns{display:flex;gap:4px;align-items:center}
-#camtoggle{width:22px;height:22px;border-radius:50%;
-  border:1.5px solid rgba(0,229,176,.4);background:rgba(0,229,176,.09);
-  color:var(--g);font-size:.6rem;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;
-  transition:background .18s,border-color .18s}
+/* ══ RIGHT PANEL ══ */
+#right{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--sur);
+  overflow:hidden;position:relative}
+ 
+/* Camera PIP */
+#cam-pip{position:absolute;top:10px;right:10px;z-index:300;width:164px;
+  background:rgba(8,11,18,.97);border:1px solid var(--bd);border-radius:12px;
+  overflow:hidden;box-shadow:0 6px 28px rgba(0,0,0,.6)}
+#cam-pip.col #cv{display:none}
+#cam-pip.col #cpbar{border-bottom:none}
+#cpbar{display:flex;align-items:center;justify-content:space-between;
+  padding:5px 8px;border-bottom:1px solid var(--bd);background:rgba(8,11,18,.9)}
+.cplbl{font-family:'Share Tech Mono',monospace;font-size:.5rem;letter-spacing:.12em;color:var(--sub)}
+.cpbtns{display:flex;gap:4px}
+#camtoggle{width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(0,229,176,.4);
+  background:rgba(0,229,176,.09);color:var(--g);font-size:.62rem;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s}
 #camtoggle:hover{background:rgba(0,229,176,.2);border-color:var(--g);box-shadow:var(--sg)}
-#camtoggle.camoff{border-color:rgba(239,68,68,.5);background:rgba(239,68,68,.1);color:var(--r)}
-#camtoggle.camoff:hover{background:rgba(239,68,68,.22)}
-#cam-collapse{width:18px;height:18px;border-radius:50%;border:1px solid var(--bd);
-  background:transparent;color:var(--sub);font-size:.58rem;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;
-  transition:background .18s}
-#cam-collapse:hover{background:rgba(255,255,255,.07);color:var(--tx)}
- 
-/* pip video */
-#cam-view{position:relative;width:100%;aspect-ratio:4/3;background:#000;overflow:hidden}
-#cam-view video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);opacity:.9}
+#camtoggle.camoff{border-color:rgba(239,68,68,.5);background:rgba(239,68,68,.09);color:var(--r)}
+#cpcol{width:18px;height:18px;border-radius:50%;border:1px solid var(--bd);background:transparent;
+  color:var(--sub);font-size:.6rem;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:background .18s}
+#cpcol:hover{background:rgba(255,255,255,.07);color:var(--tx)}
+#cv{position:relative;width:100%;aspect-ratio:4/3;background:#000;overflow:hidden}
+#cv video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);opacity:.9}
 #hcvs{position:absolute;inset:0;width:100%;height:100%;transform:scaleX(-1);z-index:2}
-#camflash{position:absolute;inset:0;pointer-events:none;border:2px solid transparent;z-index:3;transition:all .15s}
+#camflash{position:absolute;inset:0;border:2px solid transparent;z-index:3;
+  transition:all .15s;pointer-events:none}
 #camflash.fg{border-color:var(--g);box-shadow:inset 0 0 16px rgba(0,229,176,.2)}
 #camflash.fp{border-color:var(--pu);box-shadow:inset 0 0 16px rgba(168,85,247,.2)}
 .bk{position:absolute;inset:4px;pointer-events:none;z-index:3}
-.bk span{position:absolute;width:7px;height:7px;border-color:rgba(0,229,176,.5);border-style:solid}
-.bk .tl{top:0;left:0;border-width:1.5px 0 0 1.5px}
-.bk .tr{top:0;right:0;border-width:1.5px 1.5px 0 0}
-.bk .bl{bottom:0;left:0;border-width:0 0 1.5px 1.5px}
-.bk .br{bottom:0;right:0;border-width:0 1.5px 1.5px 0}
-.camov{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;
+.bk span{position:absolute;width:7px;height:7px;border-color:rgba(0,229,176,.55);border-style:solid}
+.bk .tl{top:0;left:0;border-width:1.5px 0 0 1.5px}.bk .tr{top:0;right:0;border-width:1.5px 1.5px 0 0}
+.bk .bl{bottom:0;left:0;border-width:0 0 1.5px 1.5px}.bk .br{bottom:0;right:0;border-width:0 1.5px 1.5px 0}
+.cov{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:5px;
   background:rgba(8,11,18,.96);padding:8px;text-align:center}
-.camov .ico{font-size:1.1rem}
-.camov h3{font-size:.62rem;font-weight:600;letter-spacing:.04em}
-.camov p{font-size:.52rem;color:var(--sub);line-height:1.4;max-width:130px}
-#cbtn{padding:5px 11px;background:linear-gradient(135deg,var(--g),var(--pu));
+.cov .ico{font-size:1.2rem}
+.cov h3{font-size:.65rem;font-weight:600}
+.cov p{font-size:.52rem;color:var(--sub);line-height:1.4;max-width:130px}
+#cbtn{padding:5px 12px;background:linear-gradient(135deg,var(--g),var(--pu));
   border:none;border-radius:6px;font-family:'Share Tech Mono',monospace;
   font-size:.52rem;letter-spacing:.07em;color:#080b12;font-weight:700;
   cursor:pointer;box-shadow:var(--sg);transition:opacity .18s}
-#cbtn:hover{opacity:.86}
+#cbtn:hover{opacity:.85}
 #cbtn:disabled{opacity:.35;pointer-events:none}
-.spin{width:18px;height:18px;border:2px solid rgba(0,229,176,.14);
+.spin{width:20px;height:20px;border:2px solid rgba(0,229,176,.14);
   border-top-color:var(--g);border-radius:50%;animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .fixbox{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.18);
-  border-radius:6px;padding:5px 8px;font-family:'Share Tech Mono',monospace;
-  font-size:.48rem;line-height:1.6;color:rgba(204,228,245,.62);max-width:140px;text-align:left}
+  border-radius:6px;padding:6px 9px;font-family:'Share Tech Mono',monospace;
+  font-size:.5rem;line-height:1.7;color:rgba(204,228,245,.65);max-width:140px;text-align:left}
 .fixbox b{color:var(--g)}
+/* gesture pill inside cam */
 #gpill{position:absolute;bottom:4px;left:50%;transform:translateX(-50%) scale(.85);
-  z-index:10;border-radius:5px;padding:2px 8px;font-family:'Share Tech Mono',monospace;
-  font-size:.5rem;border:1px solid var(--g);color:var(--g);
+  z-index:10;border-radius:5px;padding:2px 9px;font-family:'Share Tech Mono',monospace;
+  font-size:.52rem;border:1px solid var(--g);color:var(--g);
   background:rgba(8,11,18,.93);box-shadow:var(--sg);
   opacity:0;transition:opacity .2s,transform .2s;white-space:nowrap;pointer-events:none}
-#gpill.show{opacity:1;transform:translateX(-50%) scale(1)}
-#gpill.pp{border-color:var(--pu);color:var(--pu);box-shadow:var(--sp)}
+#gpill.on{opacity:1;transform:translateX(-50%) scale(1)}
+#gpill.pu{border-color:var(--pu);color:var(--pu);box-shadow:var(--sp)}
+/* confidence bar */
 #cwrap{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);
   z-index:10;display:flex;flex-direction:column;align-items:center;gap:2px;
   pointer-events:none;opacity:0;transition:opacity .3s}
-#cwrap.show{opacity:1}
-#cwrap label{font-family:'Share Tech Mono',monospace;font-size:.4rem;
+#cwrap.on{opacity:1}
+#cwrap label{font-family:'Share Tech Mono',monospace;font-size:.42rem;
   color:rgba(0,229,176,.4);letter-spacing:.1em}
-#ctrack{width:44px;height:2px;background:rgba(0,229,176,.1);border-radius:100px;overflow:hidden}
-#cfill{height:100%;background:var(--g);border-radius:100px;transition:width .12s,background .2s}
+#ctrack{width:46px;height:2px;background:rgba(0,229,176,.1);border-radius:100px;overflow:hidden}
+#cfill{height:100%;background:var(--g);border-radius:100px;transition:width .1s,background .2s}
  
-/* gesture HUD */
-#ghud{flex-shrink:0;display:grid;grid-template-columns:1fr 1fr;gap:2px;
-  padding:5px 7px;border-bottom:1px solid var(--bd);background:rgba(8,11,18,.5)}
-.gr{display:flex;align-items:center;gap:5px;font-family:'Share Tech Mono',monospace;
-  font-size:.49rem;letter-spacing:.04em;color:rgba(204,228,245,.28);
-  padding:3px 5px;border-radius:5px;transition:background .2s,color .2s;border:1px solid transparent}
+/* Gesture HUD */
+#ghud{flex-shrink:0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;
+  padding:5px 8px;border-bottom:1px solid var(--bd);background:rgba(8,11,18,.55)}
+.gr{display:flex;align-items:center;gap:4px;font-family:'Share Tech Mono',monospace;
+  font-size:.47rem;letter-spacing:.03em;color:rgba(204,228,245,.25);
+  padding:3px 5px;border-radius:5px;transition:all .2s;border:1px solid transparent}
 .gr.on-g{color:var(--g);background:rgba(0,229,176,.08);border-color:rgba(0,229,176,.2)}
+.gr.on-p{color:var(--pu);background:rgba(168,85,247,.08);border-color:rgba(168,85,247,.2)}
 .gr.on-y{color:var(--y);background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.2)}
 .gr.on-r{color:var(--r);background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.2)}
-.gr.on-p{color:var(--pu);background:rgba(168,85,247,.08);border-color:rgba(168,85,247,.2)}
-.gr-ico{font-size:.82rem;flex-shrink:0}
-.gr b{display:block;font-size:.46rem;color:inherit;opacity:.65}
+.gr span{font-size:.78rem;flex-shrink:0}
+.gr b{display:block;font-size:.44rem;color:inherit;opacity:.6}
  
-/* room section */
-#room-section{flex-shrink:0;display:flex;flex-direction:column;border-bottom:1px solid var(--bd)}
-.room-row{display:flex;align-items:center;gap:8px;padding:8px 12px;
-  border-bottom:1px solid var(--bd)}
-.room-row:last-child{border-bottom:none}
-.rlabel{font-family:'Share Tech Mono',monospace;font-size:.54rem;letter-spacing:.12em;
+/* Room section */
+#room-sec{flex-shrink:0;border-bottom:1px solid var(--bd)}
+.rrow{display:flex;align-items:center;gap:7px;padding:7px 12px;border-bottom:1px solid var(--bd)}
+.rrow:last-child{border-bottom:none}
+.rlbl{font-family:'Share Tech Mono',monospace;font-size:.52rem;letter-spacing:.12em;
   color:var(--sub);flex-shrink:0;text-transform:uppercase}
-#rcode{flex:1;font-family:'Share Tech Mono',monospace;font-size:.94rem;
+#rcode{flex:1;font-family:'Share Tech Mono',monospace;font-size:.9rem;
   letter-spacing:.22em;color:var(--y);font-weight:700;text-shadow:var(--sy)}
-.hb{padding:6px 12px;border-radius:8px;font-family:'Share Tech Mono',monospace;font-size:.6rem;
+.hb{padding:5px 11px;border-radius:7px;font-family:'Share Tech Mono',monospace;font-size:.58rem;
   letter-spacing:.07em;cursor:pointer;border:1px solid;background:transparent;
-  transition:background .18s;white-space:nowrap;min-height:32px;
+  transition:background .18s;white-space:nowrap;min-height:30px;
   display:flex;align-items:center;flex-shrink:0}
 .hby{border-color:rgba(245,158,11,.4);color:var(--y)}.hby:hover{background:rgba(245,158,11,.1)}
 .hbw{border-color:var(--bd);color:var(--sub)}.hbw:hover{background:rgba(0,229,176,.06)}
 .hbg{border-color:rgba(0,229,176,.35);color:var(--g)}.hbg:hover{background:rgba(0,229,176,.1)}
-#jinp{flex:1;background:rgba(0,229,176,.04);border:1px solid var(--bd);border-radius:8px;
-  padding:6px 10px;color:var(--tx);font-family:'Share Tech Mono',monospace;
-  font-size:.78rem;letter-spacing:.16em;outline:none;text-transform:uppercase;
-  transition:border-color .2s;min-height:32px}
+#jinp{flex:1;background:rgba(0,229,176,.04);border:1px solid var(--bd);border-radius:7px;
+  padding:5px 9px;color:var(--tx);font-family:'Share Tech Mono',monospace;
+  font-size:.75rem;letter-spacing:.14em;outline:none;text-transform:uppercase;
+  transition:border-color .2s;min-height:30px}
 #jinp:focus{border-color:rgba(0,229,176,.4)}
-#jinp::placeholder{color:rgba(204,228,245,.2);font-size:.65rem;letter-spacing:.08em}
-.send-row{display:flex;align-items:stretch;gap:6px;padding:7px 12px;border-top:1px solid var(--bd)}
-#sendinp{flex:1;background:rgba(0,229,176,.04);border:1px solid var(--bd);border-radius:8px;
-  padding:6px 10px;color:var(--tx);font-family:'DM Sans',sans-serif;font-size:.78rem;
-  outline:none;resize:none;height:34px;transition:border-color .2s}
+#jinp::placeholder{color:rgba(204,228,245,.2);font-size:.62rem;letter-spacing:.07em}
+.send-row{display:flex;gap:6px;padding:6px 12px;border-top:1px solid var(--bd)}
+#sendinp{flex:1;background:rgba(0,229,176,.04);border:1px solid var(--bd);border-radius:7px;
+  padding:5px 9px;color:var(--tx);font-family:'DM Sans',sans-serif;font-size:.76rem;
+  outline:none;resize:none;height:32px;transition:border-color .2s}
 #sendinp:focus{border-color:rgba(0,229,176,.35)}
 #sendinp::placeholder{color:rgba(204,228,245,.22)}
-#sendbtn{padding:0 12px;background:rgba(0,229,176,.08);border:1px solid rgba(0,229,176,.25);
-  border-radius:8px;color:var(--g);font-family:'Share Tech Mono',monospace;
-  font-size:.58rem;letter-spacing:.07em;cursor:pointer;transition:background .18s;flex-shrink:0}
+#sendbtn{padding:0 11px;background:rgba(0,229,176,.08);border:1px solid rgba(0,229,176,.25);
+  border-radius:7px;color:var(--g);font-family:'Share Tech Mono',monospace;
+  font-size:.56rem;letter-spacing:.07em;cursor:pointer;flex-shrink:0;transition:background .18s}
 #sendbtn:hover{background:rgba(0,229,176,.16)}
  
-/* clipboard section */
-#clip-section{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+/* Clipboard */
+#clip-sec{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0}
 #clip-head{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
-  padding:8px 12px 6px;border-bottom:1px solid var(--bd)}
+  padding:7px 12px 5px;border-bottom:1px solid var(--bd)}
 .clip-title{font-size:.6rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--sub)}
 .clip-meta{display:flex;gap:5px;align-items:center}
 .tag{font-family:'Share Tech Mono',monospace;font-size:.54rem;letter-spacing:.07em;
-  padding:2px 7px;border-radius:100px}
-.tgg{border:1px solid rgba(0,229,176,.2);color:var(--g);background:rgba(0,229,176,.06)}
+  padding:2px 7px;border-radius:100px;border:1px solid rgba(0,229,176,.2);
+  color:var(--g);background:rgba(0,229,176,.06)}
 #cards{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
-#cards::-webkit-scrollbar{width:4px}
-#cards::-webkit-scrollbar-thumb{background:rgba(0,229,176,.14);border-radius:100px}
+#cards::-webkit-scrollbar{width:3px}
+#cards::-webkit-scrollbar-thumb{background:rgba(0,229,176,.15);border-radius:100px}
 #empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:7px;flex:1;color:var(--sub);font-size:.72rem;text-align:center;padding:20px;line-height:1.65}
-#empty .eico{font-size:1.6rem;opacity:.22}
+.eico{font-size:1.6rem;opacity:.2}
 .card{background:rgba(16,22,40,.9);border:1px solid var(--bd);border-radius:10px;
-  padding:9px 11px;cursor:grab;transition:border-color .15s,box-shadow .15s,transform .1s;
+  padding:9px 11px;cursor:grab;transition:border-color .15s,box-shadow .15s,transform .12s;
   position:relative;user-select:none;flex-shrink:0}
 .card:hover{border-color:rgba(0,229,176,.28);box-shadow:0 3px 16px rgba(0,0,0,.28);transform:translateY(-1px)}
-.card.dragging{opacity:.42;cursor:grabbing;transform:scale(.96)}
+.card.dragging{opacity:.4;cursor:grabbing;transform:scale(.96)}
 .card.fresh{animation:cpop .3s ease}
 @keyframes cpop{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
 .ctxt{font-size:.8rem;line-height:1.5;color:var(--tx);margin-bottom:7px;
-  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
-.cmeta{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-.cdev{font-family:'Share Tech Mono',monospace;font-size:.54rem;color:var(--sub)}
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;
+  overflow:hidden;word-break:break-word}
+.cmeta{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.cdev{font-family:'Share Tech Mono',monospace;font-size:.53rem;color:var(--sub)}
 .cdev.remote{color:rgba(245,158,11,.65)}
 .ctime{font-family:'Share Tech Mono',monospace;font-size:.5rem;color:rgba(204,228,245,.2)}
 .cacts{display:flex;gap:4px}
-.ca{padding:4px 10px;border-radius:6px;font-family:'Share Tech Mono',monospace;
-  font-size:.56rem;letter-spacing:.05em;cursor:pointer;border:1px solid;
-  background:transparent;transition:background .15s;min-height:28px;display:flex;align-items:center}
+.ca{padding:4px 9px;border-radius:6px;font-family:'Share Tech Mono',monospace;
+  font-size:.54rem;letter-spacing:.05em;cursor:pointer;border:1px solid;
+  background:transparent;transition:background .15s;min-height:26px;
+  display:flex;align-items:center}
 .cag{border-color:rgba(0,229,176,.22);color:var(--g)}.cag:hover{background:rgba(0,229,176,.1)}
 .car{border-color:rgba(239,68,68,.18);color:rgba(239,68,68,.5)}.car:hover{background:rgba(239,68,68,.08)}
-.dh{position:absolute;top:8px;right:8px;font-size:.6rem;opacity:0;color:var(--sub);
+.dh{position:absolute;top:8px;right:8px;font-size:.58rem;opacity:0;color:var(--sub);
   transition:opacity .2s;pointer-events:none}
 .card:hover .dh{opacity:.4}
  
-/* drag ghost */
-#drag-ghost{position:fixed;z-index:9990;pointer-events:none;display:none;
-  background:rgba(14,20,38,.96);border:1.5px solid var(--pu);border-radius:10px;
-  padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:.78rem;color:var(--tx);
-  max-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.55),var(--sp);
-  transform:translate(-50%,-70%);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#drag-ghost.show{display:block}
- 
-/* toasts */
-#toasts{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
-  z-index:9999;display:flex;flex-direction:column;align-items:center;
-  gap:6px;pointer-events:none;width:calc(100% - 32px);max-width:360px}
-.toast{padding:8px 18px;border-radius:9px;font-family:'Share Tech Mono',monospace;
-  font-size:.68rem;letter-spacing:.06em;white-space:nowrap;max-width:100%;
+/* Toasts */
+#toasts{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);
+  z-index:99990;display:flex;flex-direction:column;align-items:center;
+  gap:5px;pointer-events:none;width:calc(100% - 28px);max-width:340px}
+.toast{padding:7px 16px;border-radius:8px;font-family:'Share Tech Mono',monospace;
+  font-size:.66rem;letter-spacing:.06em;white-space:nowrap;max-width:100%;
   overflow:hidden;text-overflow:ellipsis;animation:tin .22s ease,tout .3s ease 2s forwards}
 .tg2{background:rgba(0,229,176,.1);border:1px solid var(--g);color:var(--g);box-shadow:var(--sg)}
 .tpu{background:rgba(168,85,247,.1);border:1px solid var(--pu);color:var(--pu);box-shadow:var(--sp)}
 .ty2{background:rgba(245,158,11,.1);border:1px solid var(--y);color:var(--y);box-shadow:var(--sy)}
-@keyframes tin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tin{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 @keyframes tout{to{opacity:0;transform:translateY(4px)}}
-@keyframes pulse{0%,100%{opacity:.32}50%{opacity:1}}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
 .syncing{animation:pulse .9s ease infinite}
  
-/* mobile blocker */
-#mob-block{display:none;position:fixed;inset:0;z-index:99999;background:var(--bg);
+/* Mobile blocker */
+#mob{display:none;position:fixed;inset:0;z-index:999999;background:var(--bg);
   flex-direction:column;align-items:center;justify-content:center;
-  gap:20px;padding:36px 28px;text-align:center}
-.mb-icon{font-size:3.2rem;filter:drop-shadow(0 0 12px rgba(0,229,176,.3))}
-.mb-title{font-size:1.15rem;font-weight:700;color:var(--g);text-shadow:var(--sg);letter-spacing:.06em}
-.mb-desc{font-size:.84rem;color:var(--sub);line-height:1.75;max-width:270px}
+  gap:18px;padding:32px;text-align:center}
+.mb-ico{font-size:3rem;filter:drop-shadow(0 0 10px rgba(0,229,176,.3))}
+.mb-h{font-size:1.1rem;font-weight:700;color:var(--g);text-shadow:var(--sg)}
+.mb-p{font-size:.82rem;color:var(--sub);line-height:1.7;max-width:260px}
 .mb-box{background:rgba(0,229,176,.05);border:1px solid var(--bd);border-radius:10px;
-  padding:12px 20px;display:flex;flex-direction:column;gap:4px;align-items:center}
-.mb-box-label{font-family:'Share Tech Mono',monospace;font-size:.56rem;
-  letter-spacing:.16em;color:rgba(204,228,245,.35);text-transform:uppercase}
-.mb-box-url{font-family:'Share Tech Mono',monospace;font-size:.78rem;
-  letter-spacing:.08em;color:var(--g);text-shadow:var(--sg);word-break:break-all}
-.mb-hint{font-family:'Share Tech Mono',monospace;font-size:.6rem;
-  letter-spacing:.1em;color:rgba(204,228,245,.25)}
-@media(max-width:900px){#mob-block{display:flex}}
+  padding:10px 18px;display:flex;flex-direction:column;gap:4px;align-items:center}
+.mb-lbl{font-family:'Share Tech Mono',monospace;font-size:.54rem;letter-spacing:.15em;color:rgba(204,228,245,.3)}
+.mb-url{font-family:'Share Tech Mono',monospace;font-size:.76rem;color:var(--g);word-break:break-all}
+@media(max-width:900px){#mob{display:flex}}
 </style>
 </head>
 <body>
  
-<!-- toasts + ghost -->
+<!-- Fixed global elements -->
 <div id="toasts"></div>
-<div id="drag-ghost"></div>
-<!-- Global gesture cursor — fixed, covers full screen -->
-<div id="gcursor"></div>
+<div id="gc"></div>
+<div id="ghost"></div>
  
-<!-- MOBILE BLOCKER -->
-<div id="mob-block">
-  <div class="mb-icon">🖥️</div>
-  <div class="mb-title">Desktop Required</div>
-  <p class="mb-desc">GestureClip uses hand gesture tracking and a multi-panel layout that needs a larger screen.</p>
+<!-- Mobile blocker -->
+<div id="mob">
+  <div class="mb-ico">🖥️</div>
+  <div class="mb-h">Desktop Required</div>
+  <p class="mb-p">GestureClip needs a larger screen for hand tracking and the multi-panel layout.</p>
   <div class="mb-box">
-    <span class="mb-box-label">Open on your computer</span>
-    <span class="mb-box-url" id="mb-url"></span>
+    <span class="mb-lbl">Open this URL on your computer</span>
+    <span class="mb-url" id="mb-url"></span>
   </div>
-  <span class="mb-hint">WORKS BEST ON LAPTOP OR DESKTOP</span>
 </div>
  
 <div id="app">
@@ -344,23 +315,25 @@ header{flex-shrink:0;height:50px;display:flex;align-items:center;padding:0 14px;
  
     <!-- LEFT: EDITOR -->
     <div id="left">
-      <div class="panel-head">
-        <span class="panel-title">📝 Editor</span>
-        <span class="panel-tag">drag cards here · gesture enabled</span>
+      <div class="ph">
+        <span class="ph-title">📝 Editor</span>
+        <span class="ph-tag">drag cards here · gesture enabled</span>
       </div>
-      <!-- gcursor is now fixed/global in body -->
       <div id="ed-wrap">
-        <textarea id="ed" spellcheck="false">Gesture controls (enable camera first):
+        <textarea id="ed" spellcheck="false">Gesture Guide (enable camera first):
  
-🤏 Pinch        — Move & place cursor in editor
-☝️  Point + move  — Select text (drag to extend)
-✊ Fist          — Copy selected text to room
-✌️  2 fingers hold — Grab latest card & drag to editor
-✋ Palm          — Paste clipboard at cursor
+✌️  2 fingers up   — Move cursor anywhere on screen
+                    Hover over a clipboard card to highlight it
+🤟 3 fingers up   — Grab the highlighted card
+                    Card follows your hand as you move
+✌️  Curl ring down — Drop card at current position
  
-Drag cards from right panel to here too!
+🤏 Pinch           — Place text cursor in editor
+☝️  One finger      — Select text (move to extend)
+✊ Fist             — Copy selected text to room
+✋ Palm             — Paste clipboard at cursor
  
-Try selecting this line then make a fist:
+Try selecting this line and making a fist:
 The quick brown fox jumps over the lazy dog.
 Pack my box with five dozen liquor jugs.
 </textarea>
@@ -370,59 +343,57 @@ Pack my box with five dozen liquor jugs.
     <!-- RIGHT -->
     <div id="right">
  
-      <!-- CAMERA PIP (floating small card) -->
+      <!-- Camera PIP -->
       <div id="cam-pip">
-        <div id="cam-ctrl-bar">
-          <span class="pip-label">📷 CAM</span>
-          <div class="pip-btns">
+        <div id="cpbar">
+          <span class="cplbl">📷 CAMERA</span>
+          <div class="cpbtns">
             <button id="camtoggle" onclick="toggleCam()" title="Toggle camera">⏻</button>
-            <button id="cam-collapse" onclick="togglePip()" title="Collapse">−</button>
+            <button id="cpcol" onclick="togglePip()" title="Collapse">−</button>
           </div>
         </div>
-        <div id="cam-view">
-          <div class="camov" id="permov">
+        <div id="cv">
+          <div class="cov" id="permov">
             <div class="ico">📷</div>
             <h3>Enable Camera</h3>
-            <p>Gesture copy &amp; paste.</p>
+            <p>Gesture copy &amp; paste across devices.</p>
             <button id="cbtn" onclick="startCam()">Enable</button>
           </div>
-          <div class="camov" id="loadov" style="display:none">
-            <div class="spin"></div>
-          </div>
-          <div class="camov" id="denyov" style="display:none">
+          <div class="cov" id="loadov" style="display:none"><div class="spin"></div></div>
+          <div class="cov" id="denyov" style="display:none">
             <div class="ico">🚫</div>
             <h3 style="color:var(--r)">Denied</h3>
             <div class="fixbox" id="fixbox"></div>
-            <button class="hb hbw" style="padding:3px 9px;margin-top:2px;font-size:.5rem" onclick="retryCam()">↺ Retry</button>
+            <button class="hb hbw" style="padding:3px 10px;margin-top:2px;font-size:.5rem" onclick="retryCam()">↺ Retry</button>
           </div>
           <video id="camvid" playsinline autoplay muted></video>
           <canvas id="hcvs"></canvas>
           <div id="camflash"></div>
           <div class="bk"><span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span></div>
           <div id="cwrap"><label>GESTURE</label><div id="ctrack"><div id="cfill"></div></div></div>
-          <div id="gpill">🤏 PINCH</div>
+          <div id="gpill">✌️</div>
         </div>
       </div>
  
-      <!-- GESTURE HUD -->
+      <!-- Gesture HUD -->
       <div id="ghud">
-        <div class="gr" id="gr-two">  <span class="gr-ico">✌️</span><span>2 fingers<b>Move cursor anywhere</b></span></div>
-        <div class="gr" id="gr-three"><span class="gr-ico">🤟</span><span>3 fingers<b>Grab hovered card</b></span></div>
-        <div class="gr" id="gr-drop"> <span class="gr-ico">✌️</span><span>Curl ring finger<b>Drop card here</b></span></div>
-        <div class="gr" id="gr-pinch"><span class="gr-ico">🤏</span><span>Pinch<b>Place text cursor</b></span></div>
-        <div class="gr" id="gr-fist"> <span class="gr-ico">✊</span><span>Fist<b>Copy selection</b></span></div>
-        <div class="gr" id="gr-palm"> <span class="gr-ico">✋</span><span>Palm<b>Paste at cursor</b></span></div>
+        <div class="gr" id="gr-two">  <span>✌️</span><div>2 fingers<b>Move cursor</b></div></div>
+        <div class="gr" id="gr-three"><span>🤟</span><div>3 fingers<b>Grab card</b></div></div>
+        <div class="gr" id="gr-drop"> <span>✌️↓</span><div>Ring down<b>Drop card</b></div></div>
+        <div class="gr" id="gr-pinch"><span>🤏</span><div>Pinch<b>Place cursor</b></div></div>
+        <div class="gr" id="gr-fist"> <span>✊</span><div>Fist<b>Copy</b></div></div>
+        <div class="gr" id="gr-palm"> <span>✋</span><div>Palm<b>Paste</b></div></div>
       </div>
  
-      <!-- ROOM -->
-      <div id="room-section">
-        <div class="room-row">
-          <span class="rlabel">Room</span>
+      <!-- Room controls -->
+      <div id="room-sec">
+        <div class="rrow">
+          <span class="rlbl">Room</span>
           <span id="rcode">——————</span>
           <button class="hb hby" onclick="copyCode()">⎘ Copy</button>
           <button class="hb hbw" onclick="newRoom()">+ New</button>
         </div>
-        <div class="room-row">
+        <div class="rrow">
           <input id="jinp" maxlength="6" placeholder="Enter room code"
             oninput="this.value=this.value.toUpperCase()"
             onkeydown="if(event.key==='Enter')joinRoom()">
@@ -434,13 +405,13 @@ Pack my box with five dozen liquor jugs.
         </div>
       </div>
  
-      <!-- CLIPBOARD -->
-      <div id="clip-section">
+      <!-- Clipboard -->
+      <div id="clip-sec">
         <div id="clip-head">
           <span class="clip-title">📦 Shared Clipboard</span>
           <div class="clip-meta">
-            <span class="tag tgg" id="icount">0 items</span>
-            <button class="hb hbw" style="font-size:.52rem;padding:2px 7px;min-height:24px" onclick="clearAll()">Clear</button>
+            <span class="tag" id="icount">0 items</span>
+            <button class="hb hbw" style="font-size:.5rem;padding:2px 7px;min-height:22px" onclick="clearAll()">Clear</button>
           </div>
         </div>
         <div id="cards">
@@ -456,52 +427,65 @@ Pack my box with five dozen liquor jugs.
 </div>
  
 <script>
-// ════════════════════════════════════════
+'use strict';
+// ══════════════════════════════════════════════════
 // ELEMENTS
-// ════════════════════════════════════════
-const camvid   = document.getElementById('camvid');
-const hcvs     = document.getElementById('hcvs');
-const hctx     = hcvs.getContext('2d');
-const permov   = document.getElementById('permov');
-const loadov   = document.getElementById('loadov');
-const denyov   = document.getElementById('denyov');
-const gpill    = document.getElementById('gpill');
-const cwrap    = document.getElementById('cwrap');
-const cfill    = document.getElementById('cfill');
-const camflash = document.getElementById('camflash');
-const dcam     = document.getElementById('dcam');
-const dhand    = document.getElementById('dhand');
-const dsync    = document.getElementById('dsync');
-const scam     = document.getElementById('scam');
-const shand    = document.getElementById('shand');
-const ssync    = document.getElementById('ssync');
-const ed       = document.getElementById('ed');
-const edWrap   = document.getElementById('ed-wrap');
-const cardsEl  = document.getElementById('cards');
-const emptyEl  = document.getElementById('empty');
-const icount   = document.getElementById('icount');
-const toasts   = document.getElementById('toasts');
-const rcodeEl  = document.getElementById('rcode');
-const gcursor  = document.getElementById('gcursor');
-const dragGhost= document.getElementById('drag-ghost');
-const leftPanel= document.getElementById('left');
+// ══════════════════════════════════════════════════
+const camvid  = document.getElementById('camvid');
+const hcvs    = document.getElementById('hcvs');
+const hctx    = hcvs.getContext('2d');
+const permov  = document.getElementById('permov');
+const loadov  = document.getElementById('loadov');
+const denyov  = document.getElementById('denyov');
+const gpill   = document.getElementById('gpill');
+const cwrap   = document.getElementById('cwrap');
+const cfill   = document.getElementById('cfill');
+const camfl   = document.getElementById('camflash');
+const dcam    = document.getElementById('dcam');
+const dhand   = document.getElementById('dhand');
+const dsync   = document.getElementById('dsync');
+const scam    = document.getElementById('scam');
+const shand   = document.getElementById('shand');
+const ssync   = document.getElementById('ssync');
+const ed      = document.getElementById('ed');
+const edWrap  = document.getElementById('ed-wrap');
+const cardsEl = document.getElementById('cards');
+const emptyEl = document.getElementById('empty');
+const icount  = document.getElementById('icount');
+const toasts  = document.getElementById('toasts');
+const rcodeEl = document.getElementById('rcode');
+const gc      = document.getElementById('gc');
+const ghost   = document.getElementById('ghost');
  
-// ════════════════════════════════════════
-// ROOM / GUN
-// ════════════════════════════════════════
+// HUD rows
+const grEls = {
+  two:   document.getElementById('gr-two'),
+  three: document.getElementById('gr-three'),
+  drop:  document.getElementById('gr-drop'),
+  pinch: document.getElementById('gr-pinch'),
+  fist:  document.getElementById('gr-fist'),
+  palm:  document.getElementById('gr-palm'),
+};
+const GRC = {two:'on-g',three:'on-p',drop:'on-y',pinch:'on-g',fist:'on-r',palm:'on-p'};
+function setHud(k){
+  Object.entries(grEls).forEach(([n,el])=>{ if(el) el.className='gr'+(n===k?' '+GRC[n]:''); });
+}
+ 
+// ══════════════════════════════════════════════════
+// GUN / ROOM
+// ══════════════════════════════════════════════════
 let roomCode='', deviceId='', roomRef=null, items={};
 let camStream=null, camRunning=false;
-const MAX=25;
- 
+const MAX = 25;
 const gun = GUN(['https://gun-manhattan.herokuapp.com/gun','https://gun-us.herokuapp.com/gun']);
  
-function rand(n){ return Math.random().toString(36).substring(2,2+n).toUpperCase(); }
-function esc(s){ const d=document.createElement('div');d.textContent=s;return d.innerHTML; }
-function tstr(ts){ const d=new Date(ts); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
-function toast(msg,cls='tg2'){
+const rand  = n => Math.random().toString(36).substring(2,2+n).toUpperCase();
+const esc   = s => { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; };
+const tstr  = ts => { const d=new Date(ts); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
+const toast = (msg,cls='tg2') => {
   const el=document.createElement('div'); el.className='toast '+cls; el.textContent=msg;
   toasts.appendChild(el); setTimeout(()=>el.remove(),2700);
-}
+};
  
 function setupRoom(code){
   if(roomRef) roomRef.off();
@@ -509,10 +493,10 @@ function setupRoom(code){
   rcodeEl.textContent=code;
   ssync.textContent=code; dsync.className='dot dy syncing';
   items={}; cardsEl.querySelectorAll('.card').forEach(c=>c.remove()); renderEmpty();
-  roomRef=gun.get('gestureclip_v2_'+code).get('items');
+  roomRef = gun.get('gestureclip_v3_'+code).get('items');
   roomRef.map().on(function(data,key){
     if(!data) return;
-    if(data._del){ if(items[key]){delete items[key];renderCards();} return; }
+    if(data._del){ if(items[key]){ delete items[key]; renderCards(); } return; }
     if(!data.text||!data.ts) return;
     const isNew=!items[key], isRemote=data.device&&data.device!==deviceId;
     items[key]=data;
@@ -521,7 +505,11 @@ function setupRoom(code){
   setTimeout(()=>dsync.className='dot dy',1500);
 }
 function newRoom(){ if(Object.keys(items).length>0&&!confirm('Create new room?')) return; setupRoom(rand(6)); toast('🔑 New room','ty2'); }
-function joinRoom(){ const v=document.getElementById('jinp').value.trim().toUpperCase(); if(v.length<4){toast('Enter a valid code','tpu');return;} document.getElementById('jinp').value=''; setupRoom(v); toast('🔗 Joined '+v,'ty2'); }
+function joinRoom(){
+  const v=document.getElementById('jinp').value.trim().toUpperCase();
+  if(v.length<4){ toast('Enter a valid code','tpu'); return; }
+  document.getElementById('jinp').value=''; setupRoom(v); toast('🔗 Joined '+v,'ty2');
+}
 function copyCode(){ navigator.clipboard?.writeText(roomCode).catch(()=>{}); toast('Copied: '+roomCode,'ty2'); }
  
 function sendItem(text){
@@ -532,16 +520,19 @@ function sendItem(text){
 }
 function sendTyped(){
   const v=document.getElementById('sendinp').value.trim();
-  if(!v){toast('Type something first','tpu');return;}
+  if(!v){ toast('Type something first','tpu'); return; }
   sendItem(v); document.getElementById('sendinp').value=''; toast('⬆ Sent','tg2');
 }
  
+// ══════════════════════════════════════════════════
+// CARDS
+// ══════════════════════════════════════════════════
 function renderEmpty(){
   const list=Object.values(items).filter(i=>i.text&&!i._del);
   emptyEl.style.display=list.length?'none':'flex';
   icount.textContent=list.length+' item'+(list.length===1?'':'s');
 }
-function renderCards(newKey,isRemoteNew){
+function renderCards(newKey, isRemoteNew){
   const list=Object.values(items).filter(i=>i.text&&!i._del).sort((a,b)=>b.ts-a.ts).slice(0,MAX);
   emptyEl.style.display=list.length?'none':'flex';
   icount.textContent=list.length+' item'+(list.length===1?'':'s');
@@ -561,37 +552,33 @@ function makeCard(item){
   const card=document.createElement('div');
   const isMe=item.device===deviceId;
   card.className='card'; card.dataset.id=item.id; card.draggable=true;
-  card.innerHTML='<div class="dh">⠿ drag</div>'+
+  card.innerHTML=
+    '<div class="dh">⠿ drag</div>'+
     '<div class="ctxt">'+esc(item.text)+'</div>'+
     '<div class="cmeta"><span class="cdev'+(isMe?'':' remote')+'">'+(isMe?'💻 this device':'📡 remote')+'</span>'+
     '<span class="ctime">'+tstr(item.ts)+'</span></div>'+
     '<div class="cacts">'+
     '<button class="ca cag" onclick="pasteItem(\''+item.id+'\')">↓ Paste</button>'+
     '<button class="ca car" onclick="deleteItem(\''+item.id+'\')">✕</button></div>';
- 
-  card.addEventListener('dragstart', e => {
-    e.dataTransfer.setData('text/plain', item.text);
-    e.dataTransfer.effectAllowed = 'copy';
-    // Custom drag image — a small ghost label
-    const ghost = document.createElement('div');
-    ghost.style.cssText = `
-      position:fixed;top:-999px;left:-999px;
-      background:rgba(14,20,38,.97);border:1.5px solid var(--pu);
-      border-radius:8px;padding:6px 12px;
-      font-family:'DM Sans',sans-serif;font-size:.78rem;color:#cce4f5;
-      max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-      box-shadow:0 6px 24px rgba(0,0,0,.5);
-    `;
-    ghost.textContent = item.text.slice(0, 32) + (item.text.length > 32 ? '…' : '');
-    document.body.appendChild(ghost);
-    e.dataTransfer.setDragImage(ghost, 60, 20);
-    setTimeout(() => ghost.remove(), 100);
+  card.addEventListener('dragstart', e=>{
+    e.dataTransfer.setData('text/plain',item.text);
+    e.dataTransfer.effectAllowed='copy';
+    const dg=document.createElement('div');
+    dg.style.cssText='position:fixed;top:-999px;left:-999px;background:rgba(10,16,32,.97);'+
+      'border:1.5px solid #a855f7;border-radius:9px;padding:7px 13px;'+
+      'font-family:DM Sans,sans-serif;font-size:.8rem;color:#cce4f5;'+
+      'max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'+
+      'box-shadow:0 6px 24px rgba(0,0,0,.5)';
+    dg.textContent=item.text.slice(0,32)+(item.text.length>32?'…':'');
+    document.body.appendChild(dg);
+    e.dataTransfer.setDragImage(dg,60,20);
+    setTimeout(()=>dg.remove(),100);
     card.classList.add('dragging');
   });
-  card.addEventListener('dragend', () => card.classList.remove('dragging'));
+  card.addEventListener('dragend',()=>card.classList.remove('dragging'));
   return card;
 }
-function pasteItem(id){ const item=items[id]; if(item) pasteToEditor(item.text); }
+function pasteItem(id){ const item=items[id]; if(item) insertIntoEditor(item.text); }
 function deleteItem(id){
   const item=items[id]; if(!item) return;
   roomRef.get(id).put({id,text:'',ts:Date.now(),device:deviceId,_del:true});
@@ -604,425 +591,343 @@ function clearAll(){
   items={}; cardsEl.querySelectorAll('.card').forEach(c=>c.remove()); renderEmpty();
 }
  
-// drag & drop (mouse) — insert at exact drop pixel
-edWrap.addEventListener('dragover', e => {
-  e.preventDefault();
-  e.dataTransfer.dropEffect = 'copy';
-  edWrap.classList.add('over');
-  // Show a live caret position while hovering
-  const pos = getCaretPosFromPoint(e.clientX, e.clientY);
-  if (pos >= 0) { ed.focus(); ed.setSelectionRange(pos, pos); }
+// ══════════════════════════════════════════════════
+// EDITOR HELPERS
+// ══════════════════════════════════════════════════
+ 
+// Mouse drag-drop into editor
+edWrap.addEventListener('dragover', e=>{
+  e.preventDefault(); e.dataTransfer.dropEffect='copy';
+  edWrap.classList.add('drag-over');
+  const pos=caretPosAt(e.clientX,e.clientY);
+  if(pos>=0){ ed.focus(); ed.setSelectionRange(pos,pos); }
 });
-edWrap.addEventListener('dragleave', () => edWrap.classList.remove('over'));
-edWrap.addEventListener('drop', e => {
-  e.preventDefault();
-  edWrap.classList.remove('over');
-  const text = e.dataTransfer.getData('text/plain');
-  if (!text) return;
-  const pos = getCaretPosFromPoint(e.clientX, e.clientY);
-  insertAtPos(text, pos);
+edWrap.addEventListener('dragleave',()=>edWrap.classList.remove('drag-over'));
+edWrap.addEventListener('drop', e=>{
+  e.preventDefault(); edWrap.classList.remove('drag-over');
+  const text=e.dataTransfer.getData('text/plain');
+  if(text) insertAtScreenPos(e.clientX, e.clientY, text);
 });
  
-// ── Get textarea char offset from screen pixel coords ──
-function getCaretPosFromPoint(x, y) {
-  // Modern: document.caretPositionFromPoint (Firefox)
-  if (document.caretPositionFromPoint) {
-    const pos = document.caretPositionFromPoint(x, y);
-    if (pos && pos.offsetNode === ed || pos?.offsetNode?.parentElement === ed) {
-      return pos.offset;
-    }
-  }
-  // Webkit: document.caretRangeFromPoint (Chrome/Safari)
-  if (document.caretRangeFromPoint) {
-    const range = document.caretRangeFromPoint(x, y);
-    if (range) {
-      // Works when drop target is the textarea itself
-      ed.focus();
-      ed.dispatchEvent(new MouseEvent('click', { bubbles:true, cancelable:true, clientX:x, clientY:y }));
-      return ed.selectionStart;
-    }
-  }
-  // Fallback: manual line/char math
-  return computeCaretPos(x, y);
+// Get char offset from pixel position
+function caretPosAt(x,y){
+  const r=ed.getBoundingClientRect();
+  const cs=getComputedStyle(ed);
+  const fs=parseFloat(cs.fontSize)||14;
+  const lh=parseFloat(cs.lineHeight)||fs*1.82;
+  const pt=parseFloat(cs.paddingTop)||16;
+  const pl=parseFloat(cs.paddingLeft)||18;
+  const cw=fs*0.54;
+  const lines=ed.value.split('\n');
+  const ry=Math.max(0,y-r.top-pt);
+  const rx=Math.max(0,x-r.left-pl);
+  const li=Math.max(0,Math.min(lines.length-1,Math.floor(ry/lh)));
+  const ci=Math.max(0,Math.min(lines[li].length,Math.round(rx/cw)));
+  let pos=0; for(let i=0;i<li;i++) pos+=lines[i].length+1;
+  return pos+ci;
 }
  
-// ── Manual caret position from pixel coords (fallback) ──
-function computeCaretPos(x, y) {
-  const r  = ed.getBoundingClientRect();
-  const cs = window.getComputedStyle(ed);
-  const fs = parseFloat(cs.fontSize)   || 14;
-  const lh = parseFloat(cs.lineHeight) || fs * 1.82;
-  const pt = parseFloat(cs.paddingTop)    || 16;
-  const pl = parseFloat(cs.paddingLeft)   || 18;
-  const cw = fs * 0.54;
-  const lines = ed.value.split('\n');
-  const relY  = Math.max(0, y - r.top  - pt);
-  const relX  = Math.max(0, x - r.left - pl);
-  const li = Math.max(0, Math.min(lines.length - 1, Math.floor(relY / lh)));
-  const ci = Math.max(0, Math.min(lines[li].length, Math.round(relX / cw)));
-  let pos = 0;
-  for (let i = 0; i < li; i++) pos += lines[i].length + 1;
-  return pos + ci;
-}
- 
-// ── Insert text at specific char position ──
-function insertAtPos(text, pos) {
-  const safePos = (pos >= 0 && pos <= ed.value.length) ? pos : ed.value.length;
-  const before = ed.value.substring(0, safePos);
-  const after  = ed.value.substring(safePos);
-  ed.value = before + text + after;
-  ed.selectionStart = ed.selectionEnd = safePos + text.length;
+// Insert text at screen pixel position
+function insertAtScreenPos(x, y, text){
+  const pos=caretPosAt(x,y);
+  const safe=(pos>=0&&pos<=ed.value.length)?pos:ed.value.length;
+  ed.value=ed.value.substring(0,safe)+text+ed.value.substring(safe);
+  ed.selectionStart=ed.selectionEnd=safe+text.length;
   ed.focus();
-  // Flash the editor border briefly
-  edWrap.style.outline = '2px solid rgba(168,85,247,.5)';
-  setTimeout(() => edWrap.style.outline = '', 400);
-  toast('📌 Dropped at cursor!', 'tpu');
+  flashEditor();
+  toast('📌 Dropped!','tpu');
 }
  
-function pasteToEditor(text) {
-  const s  = ed.selectionStart ?? ed.value.length;
-  const e2 = ed.selectionEnd   ?? s;
-  ed.value = ed.value.substring(0, s) + text + ed.value.substring(e2);
-  ed.selectionStart = ed.selectionEnd = s + text.length;
-  ed.focus();
-  edWrap.style.outline = '2px solid rgba(168,85,247,.4)';
-  setTimeout(() => edWrap.style.outline = '', 400);
-  toast('✋ Pasted!', 'tpu');
+// Insert text at current caret (for gesture paste / button paste)
+function insertIntoEditor(text){
+  const s=ed.selectionStart??ed.value.length, e2=ed.selectionEnd??s;
+  ed.value=ed.value.substring(0,s)+text+ed.value.substring(e2);
+  ed.selectionStart=ed.selectionEnd=s+text.length;
+  ed.focus(); flashEditor(); toast('✋ Pasted!','tpu');
 }
  
-// ════════════════════════════════════════════════════════════
-// GESTURE ENGINE  — new flow:
-//   ✌️  TWO   → global cursor moves anywhere on screen
-//              → hovers over cards to highlight them
-//   🤟 THREE  → grab the highlighted card (follows cursor)
-//   ✌️  back to TWO → drop card at current position
-//   🤏 PINCH  → place text cursor in editor
-//   ☝️  POINT  → select text
-//   ✊ FIST   → copy selection
-//   ✋ PALM   → paste
-// ════════════════════════════════════════════════════════════
- 
-const grEls = {
-  two:   document.getElementById('gr-two'),
-  three: document.getElementById('gr-three'),
-  drop:  document.getElementById('gr-drop'),
-  pinch: document.getElementById('gr-pinch'),
-  fist:  document.getElementById('gr-fist'),
-  palm:  document.getElementById('gr-palm'),
-};
-const GR_COL = {two:'on-g',three:'on-p',drop:'on-y',pinch:'on-g',fist:'on-r',palm:'on-p'};
-function setHud(k){
-  Object.entries(grEls).forEach(([n,el])=>{ if(el) el.className='gr'+(n===k?' '+GR_COL[n]:''); });
+function flashEditor(col='rgba(168,85,247,.5)'){
+  edWrap.style.outline='2px solid '+col;
+  setTimeout(()=>edWrap.style.outline='',400);
 }
+ 
+// ══════════════════════════════════════════════════
+// GESTURE ENGINE
+// ══════════════════════════════════════════════════
  
 // State
-let gCur      = 'NONE';
-let gBuf      = [];
-let gT0       = 0;
-let gCaretPos = 0;
-let gSelAnc   = -1;
-let gDragId   = null;
-let gDragging = false;
-let gHoverId  = null;  // card id currently hovered by 2-finger cursor
-let pillTimer = null;
+let gCur     = 'NONE';
+let gBuf     = [];
+let gT0      = 0;
+let gCarPos  = 0;   // last pinch caret position
+let gSelAnc  = -1;  // selection anchor
+let gDragId  = null;
+let gDragging= false;
+let gHovId   = null; // hovered card id
+let gPillT   = null;
  
-const BUF = 4;  // frames to confirm gesture change
+const GBUF = 4; // frames to stabilise
  
-function dist(a,b){ return Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2); }
+const dist=(a,b)=>Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2);
  
-// ── Classify gesture from landmarks ──
+// ── Classify gesture ──
 function classify(lm){
-  const sc = dist(lm[0],lm[9]) || 0.1;
- 
-  // PINCH: thumb tip close to index tip
-  if(dist(lm[4],lm[8])/sc < 0.35) return {name:'PINCH', tip:lm[8]};
- 
-  // finger up = tip.y < pip.y
-  const up = [
-    lm[8].y  < lm[6].y,   // index
-    lm[12].y < lm[10].y,  // middle
-    lm[16].y < lm[14].y,  // ring
-    lm[20].y < lm[18].y,  // pinky
+  const sc=dist(lm[0],lm[9])||0.1;
+  // Pinch
+  if(dist(lm[4],lm[8])/sc<0.35) return {name:'PINCH',tip:lm[8]};
+  // Finger up: tip strictly above pip joint
+  const up=[
+    lm[8].y <lm[6].y,   // index
+    lm[12].y<lm[10].y,  // middle
+    lm[16].y<lm[14].y,  // ring
+    lm[20].y<lm[18].y,  // pinky
   ];
- 
   if( up[0]&&!up[1]&&!up[2]&&!up[3]) return {name:'POINT', tip:lm[8]};
-  if( up[0]&& up[1]&&!up[2]&&!up[3]) return {name:'TWO',   tip:lm[8]};   // ✌️ index+middle
-  if( up[0]&& up[1]&& up[2]&&!up[3]) return {name:'THREE', tip:lm[12]};  // 🤟 index+middle+ring
+  if( up[0]&& up[1]&&!up[2]&&!up[3]) return {name:'TWO',   tip:lm[8]};
+  if( up[0]&& up[1]&& up[2]&&!up[3]) return {name:'THREE', tip:lm[12]};
   if( up[0]&& up[1]&& up[2]&& up[3]) return {name:'PALM',  tip:lm[9]};
   if(!up[0]&&!up[1]&&!up[2]&&!up[3]) return {name:'FIST',  tip:lm[9]};
- 
-  return {name:'NONE', tip:lm[9]};
+  return {name:'NONE',tip:lm[9]};
 }
  
-// ── Map tip (0-1 normalised camera) → FULL SCREEN pixel coords ──
-// Camera video is CSS mirrored (scaleX(-1)), so flip X.
-function tipToScreen(tip){
+// ── Convert normalised tip → FULL SCREEN px ──
+// Camera CSS is scaleX(-1) so flip X.
+function tipToPage(tip){
   return {
-    x: (1 - tip.x) * window.innerWidth,
-    y: tip.y        * window.innerHeight,
+    x: (1-tip.x)*window.innerWidth,
+    y:    tip.y *window.innerHeight,
   };
 }
  
-// ── Update the fixed global cursor dot ──
-function moveCursor(x, y, cls){
-  gcursor.style.left = x + 'px';
-  gcursor.style.top  = y + 'px';
-  gcursor.className  = 'vis ' + (cls||'');
+// ── Move the global cursor dot ──
+function movGc(x,y,cls){
+  gc.style.left=x+'px'; gc.style.top=y+'px';
+  gc.className='on '+(cls||'');
 }
-function hideCursor(){ gcursor.className = ''; }
+function hideGc(){ gc.className=''; }
  
-// ── Ripple ──
+// ── Ripple animation ──
 function ripple(){
-  const r=document.createElement('div'); r.className='gc-ring';
-  gcursor.appendChild(r); setTimeout(()=>r.remove(),550);
+  const r=document.createElement('div'); r.className='gcring';
+  gc.appendChild(r); setTimeout(()=>r.remove(),550);
 }
  
-// ── Find topmost .card element at screen coords ──
-function cardAtXY(x, y){
-  const els = document.elementsFromPoint(x, y);
-  for(const el of els){
-    const c = el.closest?.('.card');
-    if(c?.dataset?.id) return c;
-  }
-  return null;
+// ── Pill message ──
+function pill(msg,pu=false){
+  gpill.textContent=msg; gpill.className='on'+(pu?' pu':'');
+  clearTimeout(gPillT); gPillT=setTimeout(()=>{ gpill.className=''; gPillT=null; },2200);
+}
+function doFlash(c){ camfl.className=c; setTimeout(()=>camfl.className='',550); }
+ 
+// ── Card hover ──
+function setHov(id){
+  if(gHovId===id) return;
+  if(gHovId){ const el=cardsEl.querySelector('[data-id="'+gHovId+'"]'); if(el) el.classList.remove('ghover'); }
+  gHovId=id;
+  if(id){ const el=cardsEl.querySelector('[data-id="'+id+'"]'); if(el) el.classList.add('ghover'); }
 }
  
-// ── Highlight card on hover ──
-function setHoverCard(id){
-  if(gHoverId === id) return;
-  // Remove old
-  if(gHoverId){
-    const old = cardsEl.querySelector('[data-id="'+gHoverId+'"]');
-    if(old) old.classList.remove('g-hover');
-  }
-  gHoverId = id;
-  if(id){
-    const el = cardsEl.querySelector('[data-id="'+id+'"]');
-    if(el) el.classList.add('g-hover');
-  }
-}
- 
-// ── Drag ghost ──
-function startDrag(id, x, y){
-  const item = items[id]; if(!item) return;
-  gDragId   = id;
-  gDragging = true;
-  // Remove hover glow — card is now being dragged
-  setHoverCard(null);
-  // Style the ghost
-  dragGhost.textContent = item.text.slice(0,36)+(item.text.length>36?'…':'');
-  dragGhost.classList.add('show');
-  dragGhost.style.left = x+'px';
-  dragGhost.style.top  = y+'px';
+// ── Start / move / drop ghost drag ──
+function startGhostDrag(id,x,y){
+  const item=items[id]; if(!item) return;
+  gDragId=id; gDragging=true;
+  setHov(null);
+  ghost.textContent=item.text.slice(0,36)+(item.text.length>36?'…':'');
+  ghost.classList.add('on');
+  ghost.style.left=x+'px'; ghost.style.top=y+'px';
   ripple();
-  showPill('🤟 GRABBED — lower ring finger to drop',false);
-  toast('🤟 Card grabbed — move & lower ring finger to drop','ty2');
+  pill('🤟 GRABBED — curl ring finger to drop',false);
+  toast('🤟 Card grabbed — move to editor, curl ring to drop','ty2');
 }
-function moveDragGhost(x, y){
-  dragGhost.style.left = x+'px';
-  dragGhost.style.top  = y+'px';
+function moveGhost(x,y){
+  ghost.style.left=x+'px'; ghost.style.top=y+'px';
 }
-function dropDragAt(x, y){
-  const item = gDragId ? items[gDragId] : null;
-  dragGhost.classList.remove('show');
-  setHoverCard(null);
+function dropGhost(x,y){
+  const item=gDragId?items[gDragId]:null;
+  ghost.classList.remove('on');
+  setHov(null);
   if(item){
-    const r = ed.getBoundingClientRect();
-    if(x>=r.left && x<=r.right && y>=r.top && y<=r.bottom){
-      const pos = computeCaretPos(x, y);
-      insertAtPos(item.text, pos);
+    const r=ed.getBoundingClientRect();
+    if(x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom){
+      insertAtScreenPos(x,y,item.text);
       toast('✌️ Dropped into editor!','ty2'); ripple();
     } else {
-      toast('Dropped outside editor — cancelled','ty2');
+      toast('Drop over the editor to paste','ty2');
     }
   }
-  gDragId   = null;
-  gDragging = false;
+  gDragId=null; gDragging=false;
 }
  
-// ── Pill / flash helpers ──
-function showPill(msg, p){
-  gpill.textContent = msg; gpill.className = 'show'+(p?' pp':'');
-  clearTimeout(pillTimer); pillTimer = setTimeout(()=>{ gpill.className=''; pillTimer=null; }, 2200);
+// ── Place textarea caret at screen coords ──
+function placeCaretAt(x,y){
+  const r=ed.getBoundingClientRect();
+  if(x<r.left||x>r.right||y<r.top||y>r.bottom) return;
+  const pos=caretPosAt(x,y);
+  ed.focus(); ed.setSelectionRange(pos,pos); gCarPos=pos;
 }
-function doFlash(c){ camflash.className=c; setTimeout(()=>camflash.className='',550); }
+ 
+// ── Extend selection from anchor to screen coords ──
+function extendSel(x,y){
+  if(gSelAnc<0) return;
+  const r=ed.getBoundingClientRect();
+  const cx=Math.max(r.left+1,Math.min(r.right-1,x));
+  const cy=Math.max(r.top+1, Math.min(r.bottom-1,y));
+  const end=caretPosAt(cx,cy);
+  const s=Math.min(gSelAnc,end), e=Math.max(gSelAnc,end);
+  ed.focus(); ed.setSelectionRange(s,e);
+}
  
 // ── Copy ──
 function gestCopy(){
   const s=ed.selectionStart, e2=ed.selectionEnd;
-  if(s===e2){ toast('⚠ Use ☝️ Point to select text first','tpu'); return; }
-  const txt = ed.value.substring(s, e2);
-  sendItem(txt);
-  doFlash('fg'); showPill('✊ COPIED + SENT!',false);
+  if(s===e2){ toast('⚠ Use ☝️ to select text first','tpu'); return; }
+  sendItem(ed.value.substring(s,e2));
+  doFlash('fg'); pill('✊ COPIED + SENT!',false);
   toast('✊ Copied & sent to room','tg2'); ripple();
 }
  
 // ── Paste ──
 function gestPaste(){
   const latest=Object.values(items).filter(i=>i.text&&!i._del).sort((a,b)=>b.ts-a.ts)[0];
-  if(!latest){ toast('⚠ Nothing in clipboard','tpu'); return; }
-  ed.focus(); ed.setSelectionRange(gCaretPos,gCaretPos);
-  pasteToEditor(latest.text);
-  doFlash('fp'); showPill('✋ PASTED!',true); ripple();
+  if(!latest){ toast('⚠ Nothing in clipboard yet','tpu'); return; }
+  ed.focus(); ed.setSelectionRange(gCarPos,gCarPos);
+  insertIntoEditor(latest.text);
+  doFlash('fp'); pill('✋ PASTED!',true); ripple();
 }
  
-// ════════════════════════════════════════
-// onResults — per frame
-// ════════════════════════════════════════
+// ══════════════════════════════════════════════════
+// onResults
+// ══════════════════════════════════════════════════
 function onResults(res){
-  hcvs.width  = camvid.videoWidth  || hcvs.offsetWidth;
-  hcvs.height = camvid.videoHeight || hcvs.offsetHeight;
+  hcvs.width =camvid.videoWidth ||hcvs.offsetWidth;
+  hcvs.height=camvid.videoHeight||hcvs.offsetHeight;
   hctx.clearRect(0,0,hcvs.width,hcvs.height);
  
   if(!res.multiHandLandmarks?.length){
     dhand.className='dot'; shand.textContent='HAND';
-    cwrap.className=''; if(!pillTimer) gpill.className='';
-    hideCursor();
-    if(gDragging)          dropDragAt(-9999,-9999);
-    if(gCur==='POINT')     ed.classList.remove('sel-active');
-    setHoverCard(null);
+    cwrap.className=''; if(!gPillT) gpill.className='';
+    hideGc();
+    if(gDragging)       dropGhost(-9999,-9999);
+    if(gCur==='POINT')  ed.classList.remove('sel-mode');
+    setHov(null);
     gCur='NONE'; gBuf=[]; setHud(null);
     return;
   }
  
   dhand.className='dot dp'; shand.textContent='DETECTED';
-  const lm = res.multiHandLandmarks[0];
- 
+  const lm=res.multiHandLandmarks[0];
   drawConnectors(hctx,lm,HAND_CONNECTIONS,{color:'rgba(0,229,176,.25)',lineWidth:1.5});
   drawLandmarks(hctx,lm,{color:'rgba(0,229,176,.8)',fillColor:'rgba(0,0,0,.4)',
     lineWidth:1,radius:d=>(d.index===4||d.index===8)?6:3});
  
-  const cl   = classify(lm);
-  const rawG = cl.name;
-  const tip  = cl.tip;
+  const cl=classify(lm);
+  const raw=cl.name;
+  const tip=cl.tip;
  
-  // Debounce buffer
-  gBuf.push(rawG);
-  if(gBuf.length > BUF) gBuf.shift();
+  // ── Immediate per-frame updates (no debounce) ──
+  const {x:px,y:py}=tipToPage(tip);
+  // Always show cursor with raw gesture class
+  const rawCls={TWO:'two',THREE:'three',PINCH:'pinch',POINT:'point',FIST:'fist',PALM:'palm'}[raw]||'two';
+  if(raw!=='NONE') movGc(px,py,rawCls); else hideGc();
  
-  // Always update cursor position immediately (smooth movement)
-  const {x:sx, y:sy} = tipToScreen(tip);
-  const curCls = {TWO:'c-two',THREE:'c-grab',PINCH:'c-pinch',POINT:'c-point',FIST:'c-fist',PALM:'c-palm'}[rawG]||'c-two';
-  if(rawG!=='NONE') moveCursor(sx,sy,curCls); else if(gCur==='NONE') hideCursor();
- 
-  // For TWO: live hover detection every frame regardless of buffer
-  if(rawG === 'TWO' && !gDragging){
-    const hovCard = cardAtXY(sx, sy);
-    setHoverCard(hovCard?.dataset?.id || null);
+  // Card hover: live every frame for TWO
+  if(raw==='TWO'&&!gDragging){
+    const hovCard=document.elementsFromPoint(px,py)
+      .map(el=>el.closest?.('.card')).find(Boolean);
+    setHov(hovCard?.dataset?.id||null);
   }
- 
-  // For THREE (dragging): move ghost every frame
-  if(rawG === 'THREE' && gDragging){
-    moveDragGhost(sx, sy);
-    setHud('three');
-  }
- 
-  // Only commit gesture change once buffer is stable
-  if(!gBuf.every(g=>g===gBuf[0])) return;
-  const newG = gBuf[0];
-  const now  = Date.now();
+  // Ghost follows hand for THREE while dragging
+  if(raw==='THREE'&&gDragging) moveGhost(px,py);
  
   // Confidence bar
-  cwrap.className = newG!=='NONE'?'show':'';
-  cfill.style.width = newG!=='NONE'?'90%':'0';
+  cwrap.className=raw!=='NONE'?'on':'';
+  cfill.style.width=raw!=='NONE'?'90%':'0';
   cfill.style.background={TWO:'var(--g)',THREE:'var(--pu)',PINCH:'var(--g)',
-    POINT:'var(--y)',FIST:'var(--r)',PALM:'var(--pu)'}[newG]||'var(--g)';
+    POINT:'var(--y)',FIST:'var(--r)',PALM:'var(--pu)'}[raw]||'var(--g)';
  
-  if(newG === gCur) {
-    // ── SAME gesture — continuous actions ──
+  // ── Debounce: wait GBUF identical frames before committing ──
+  gBuf.push(raw);
+  if(gBuf.length>GBUF) gBuf.shift();
+  if(!gBuf.every(g=>g===gBuf[0])) return; // still transitioning
+ 
+  const newG=gBuf[0];
+  if(newG===gCur){
+    // ── HELD — continuous updates ──
     switch(gCur){
       case 'TWO':
         setHud('two');
-        // Hover feedback
-        if(gHoverId) showPill('✌️ HOVER — raise ring finger to grab',false);
-        else         showPill('✌️ POINT AT A CLIPBOARD CARD',false);
+        if(gHovId) pill('✌️ HOVER — raise ring finger to grab',false);
+        else       pill('✌️ POINT AT A CLIPBOARD CARD',false);
         break;
       case 'THREE':
-        setHud('three');
+        setHud(gDragging?'three':'three');
         break;
       case 'PINCH':
-        placeCaretAt(sx,sy); setHud('pinch');
+        placeCaretAt(px,py); setHud('pinch');
         break;
       case 'POINT':
-        extendSelTo(sx,sy); setHud('pinch');
+        extendSel(px,py); setHud('pinch');
         const n=Math.abs((ed.selectionEnd||0)-(ed.selectionStart||0));
-        if(n>0) showPill('☝️ '+n+' chars selected',false);
+        if(n>0) pill('☝️ '+n+' chars',false);
         break;
     }
     return;
   }
  
   // ── GESTURE CHANGED ──
-  const prev = gCur;
-  gCur = newG; gT0 = now;
+  const prev=gCur; gCur=newG; gT0=Date.now();
  
-  // EXIT previous
+  // Exit previous
   switch(prev){
     case 'POINT':
-      ed.classList.remove('sel-active');
-      gSelAnc = -1;
-      break;
+      ed.classList.remove('sel-mode'); gSelAnc=-1; break;
     case 'THREE':
-      // Ring finger curled back down → DROP
-      if(gDragging){
-        dropDragAt(sx, sy);
-      }
+      // Ring finger curled (back to TWO) = DROP
+      if(gDragging) dropGhost(px,py);
       break;
     case 'TWO':
-      if(!gDragging) setHoverCard(null);
-      break;
+      if(!gDragging) setHov(null); break;
   }
  
-  // ENTER new
+  // Enter new
   switch(newG){
     case 'TWO':
-      setHud('two');
-      showPill('✌️ POINT AT A CLIPBOARD CARD',false);
-      break;
+      setHud('two'); pill('✌️ POINT AT A CLIPBOARD CARD',false); break;
  
     case 'THREE':
-      // Grab whatever card is hovered
-      if(gHoverId){
-        startDrag(gHoverId, sx, sy);
-        setHud('three');
+      if(gHovId){
+        startGhostDrag(gHovId,px,py); setHud('three');
       } else if(gDragging){
-        // Already dragging — keep going
-        setHud('three');
+        setHud('three'); // already dragging, keep going
       } else {
-        showPill('🤟 HOVER A CARD FIRST with ✌️',false);
-        toast('⚠ Point at a clipboard card first with ✌️','tpu');
-        gCur = 'TWO'; // revert
+        pill('🤟 HOVER A CARD WITH ✌️ FIRST',false);
+        toast('⚠ Point at a card first with ✌️','tpu');
+        gCur='NONE'; // reset so next TWO re-enters cleanly
       }
       break;
  
     case 'PINCH':
-      placeCaretAt(sx,sy); ripple();
-      setHud('pinch'); showPill('🤏 CURSOR PLACED',false);
-      break;
+      placeCaretAt(px,py); ripple();
+      setHud('pinch'); pill('🤏 CURSOR PLACED',false); break;
  
     case 'POINT':
-      gSelAnc = gCaretPos;
-      ed.classList.add('sel-active');
-      setHud('pinch'); showPill('☝️ MOVE TO SELECT',false);
-      break;
+      gSelAnc=gCarPos; ed.classList.add('sel-mode');
+      setHud('pinch'); pill('☝️ MOVE TO SELECT',false); break;
  
     case 'FIST':
-      gestCopy(); setHud('fist');
-      break;
+      gestCopy(); setHud('fist'); break;
  
     case 'PALM':
-      gestPaste(); setHud('palm');
-      break;
+      gestPaste(); setHud('palm'); break;
  
     default:
-      setHud(null);
-      if(!pillTimer) gpill.className='';
+      setHud(null); if(!gPillT) gpill.className='';
   }
 }
  
-// ════════════════════════════════════════
+// ══════════════════════════════════════════════════
 // CAMERA
-// ════════════════════════════════════════
+// ══════════════════════════════════════════════════
 async function startCam(){
   const btn=document.getElementById('cbtn');
   btn.disabled=true; btn.textContent='Requesting…';
@@ -1035,10 +940,12 @@ async function startCam(){
     document.getElementById('camtoggle').classList.remove('camoff');
  
     const hands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
-    hands.setOptions({maxNumHands:1,modelComplexity:1,minDetectionConfidence:.7,minTrackingConfidence:.6});
+    hands.setOptions({maxNumHands:1,modelComplexity:1,
+      minDetectionConfidence:.7,minTrackingConfidence:.6});
     hands.onResults(onResults);
  
-    const cam=new Camera(camvid,{onFrame:async()=>await hands.send({image:camvid}),width:1280,height:720});
+    const cam=new Camera(camvid,{
+      onFrame:async()=>await hands.send({image:camvid}),width:1280,height:720});
     cam.start();
     loadov.style.display='none';
     toast('📷 Camera active — gestures enabled','tg2');
@@ -1048,35 +955,26 @@ async function startCam(){
     let fix='';
     if(err.name==='NotAllowedError'||err.name==='PermissionDeniedError'){
       if(/Chrome/.test(ua)&&!/Edg/.test(ua)) fix='<b>Chrome:</b> Click 🔒 in address bar → Camera → <b>Allow</b> → reload';
-      else if(/Firefox/.test(ua)) fix='<b>Firefox:</b> Click camera icon in address bar → <b>Allow</b>';
-      else if(/Safari/.test(ua)) fix='<b>Safari:</b> Safari menu → Settings for This Website → Camera → <b>Allow</b>';
+      else if(/Firefox/.test(ua)) fix='<b>Firefox:</b> Click camera icon → <b>Allow</b>';
+      else if(/Safari/.test(ua)) fix='<b>Safari:</b> Safari menu → Settings → Camera → <b>Allow</b>';
       else fix='Click 🔒 in address bar → Camera → <b>Allow</b>';
     } else { fix='Camera unavailable: '+err.name; }
     document.getElementById('fixbox').innerHTML=fix;
     toast('Camera denied — type to send instead','ty2');
   }
 }
- 
-function togglePip(){
-  const pip=document.getElementById('cam-pip');
-  const btn=document.getElementById('cam-collapse');
-  const collapsed=pip.classList.toggle('collapsed');
-  btn.textContent=collapsed?'+':'−';
-}
- 
 function retryCam(){
   denyov.style.display='none'; permov.style.display='flex';
   const btn=document.getElementById('cbtn');
-  btn.disabled=false; btn.textContent='Enable Camera';
+  btn.disabled=false; btn.textContent='Enable';
 }
- 
 function toggleCam(){
   if(camRunning){
-    if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
+    if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
     camvid.srcObject=null; camRunning=false;
     dcam.className='dot'; scam.textContent='CAM';
     dhand.className='dot'; shand.textContent='HAND';
-    cwrap.className=''; gpill.className=''; hideCursor();
+    cwrap.className=''; gpill.className=''; hideGc();
     hctx.clearRect(0,0,hcvs.width,hcvs.height);
     permov.style.display='flex';
     document.getElementById('camtoggle').classList.add('camoff');
@@ -1086,10 +984,16 @@ function toggleCam(){
     startCam();
   }
 }
+function togglePip(){
+  const pip=document.getElementById('cam-pip');
+  const btn=document.getElementById('cpcol');
+  const c=pip.classList.toggle('col');
+  btn.textContent=c?'+':'−';
+}
  
-// ════════════════════════════════════════
+// ══════════════════════════════════════════════════
 // BOOT
-// ════════════════════════════════════════
+// ══════════════════════════════════════════════════
 const urlEl=document.getElementById('mb-url');
 if(urlEl) urlEl.textContent=location.href.length>55?location.href.slice(0,55)+'…':location.href;
 setupRoom(rand(6));
