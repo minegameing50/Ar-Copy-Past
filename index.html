@@ -92,68 +92,89 @@ header{flex-shrink:0;height:50px;display:flex;align-items:center;padding:0 14px;
  
 /* ── RIGHT: stacked sections ── */
 #right{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;
-  background:var(--sur);overflow:hidden}
+  background:var(--sur);overflow:hidden;position:relative}
  
-/* cam section */
-#cam-section{flex-shrink:0;display:flex;flex-direction:row;border-bottom:1px solid var(--bd)}
-#cam-ctrl{flex-shrink:0;width:52px;display:flex;flex-direction:column;align-items:center;
-  justify-content:flex-start;gap:8px;padding:10px 0;
-  border-right:1px solid var(--bd);background:rgba(8,11,18,.6)}
-#camtoggle{width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(0,229,176,.4);
-  background:rgba(0,229,176,.09);color:var(--g);font-size:.88rem;
+/* ── CAMERA PIP (floating card, top-right of right panel) ── */
+#cam-pip{
+  position:absolute;top:10px;right:10px;z-index:200;
+  width:160px;
+  background:rgba(8,11,18,.97);
+  border:1px solid var(--bd);border-radius:12px;
+  box-shadow:0 6px 28px rgba(0,0,0,.6),0 0 0 1px rgba(0,229,176,.06);
+  overflow:hidden;
+}
+#cam-pip.collapsed #cam-view{display:none}
+#cam-pip.collapsed #cam-ctrl-bar{border-bottom:none}
+ 
+/* pip top bar */
+#cam-ctrl-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:5px 8px;border-bottom:1px solid var(--bd);
+  background:rgba(8,11,18,.9);
+}
+.pip-label{font-family:'Share Tech Mono',monospace;font-size:.5rem;
+  letter-spacing:.12em;color:var(--sub);text-transform:uppercase}
+.pip-btns{display:flex;gap:4px;align-items:center}
+#camtoggle{width:22px;height:22px;border-radius:50%;
+  border:1.5px solid rgba(0,229,176,.4);background:rgba(0,229,176,.09);
+  color:var(--g);font-size:.6rem;
   display:flex;align-items:center;justify-content:center;cursor:pointer;
-  transition:background .18s,border-color .18s,box-shadow .18s}
+  transition:background .18s,border-color .18s}
 #camtoggle:hover{background:rgba(0,229,176,.2);border-color:var(--g);box-shadow:var(--sg)}
 #camtoggle.camoff{border-color:rgba(239,68,68,.5);background:rgba(239,68,68,.1);color:var(--r)}
 #camtoggle.camoff:hover{background:rgba(239,68,68,.22)}
-.ctrl-label{font-family:'Share Tech Mono',monospace;font-size:.46rem;letter-spacing:.1em;
-  color:var(--sub);text-transform:uppercase;writing-mode:vertical-rl;
-  text-orientation:mixed;transform:rotate(180deg);opacity:.6}
-#cam-view{flex:1;position:relative;background:#000;aspect-ratio:4/3;min-height:0;overflow:hidden}
+#cam-collapse{width:18px;height:18px;border-radius:50%;border:1px solid var(--bd);
+  background:transparent;color:var(--sub);font-size:.58rem;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:background .18s}
+#cam-collapse:hover{background:rgba(255,255,255,.07);color:var(--tx)}
+ 
+/* pip video */
+#cam-view{position:relative;width:100%;aspect-ratio:4/3;background:#000;overflow:hidden}
 #cam-view video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);opacity:.9}
 #hcvs{position:absolute;inset:0;width:100%;height:100%;transform:scaleX(-1);z-index:2}
 #camflash{position:absolute;inset:0;pointer-events:none;border:2px solid transparent;z-index:3;transition:all .15s}
-#camflash.fg{border-color:var(--g);box-shadow:inset 0 0 22px rgba(0,229,176,.18)}
-#camflash.fp{border-color:var(--pu);box-shadow:inset 0 0 22px rgba(168,85,247,.18)}
-.bk{position:absolute;inset:6px;pointer-events:none;z-index:3}
-.bk span{position:absolute;width:10px;height:10px;border-color:rgba(0,229,176,.5);border-style:solid}
+#camflash.fg{border-color:var(--g);box-shadow:inset 0 0 16px rgba(0,229,176,.2)}
+#camflash.fp{border-color:var(--pu);box-shadow:inset 0 0 16px rgba(168,85,247,.2)}
+.bk{position:absolute;inset:4px;pointer-events:none;z-index:3}
+.bk span{position:absolute;width:7px;height:7px;border-color:rgba(0,229,176,.5);border-style:solid}
 .bk .tl{top:0;left:0;border-width:1.5px 0 0 1.5px}
 .bk .tr{top:0;right:0;border-width:1.5px 1.5px 0 0}
 .bk .bl{bottom:0;left:0;border-width:0 0 1.5px 1.5px}
 .bk .br{bottom:0;right:0;border-width:0 1.5px 1.5px 0}
 .camov{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:7px;background:rgba(8,11,18,.96);
-  padding:12px;text-align:center}
-.camov .ico{font-size:1.5rem}
-.camov h3{font-size:.78rem;font-weight:600;letter-spacing:.05em}
-.camov p{font-size:.64rem;color:var(--sub);line-height:1.5;max-width:170px}
-#cbtn{padding:7px 16px;background:linear-gradient(135deg,var(--g),var(--pu));
-  border:none;border-radius:8px;font-family:'Share Tech Mono',monospace;
-  font-size:.63rem;letter-spacing:.08em;color:#080b12;font-weight:700;
-  cursor:pointer;box-shadow:var(--sg);transition:opacity .18s,transform .15s}
-#cbtn:hover{opacity:.86;transform:scale(.98)}
+  align-items:center;justify-content:center;gap:5px;
+  background:rgba(8,11,18,.96);padding:8px;text-align:center}
+.camov .ico{font-size:1.1rem}
+.camov h3{font-size:.62rem;font-weight:600;letter-spacing:.04em}
+.camov p{font-size:.52rem;color:var(--sub);line-height:1.4;max-width:130px}
+#cbtn{padding:5px 11px;background:linear-gradient(135deg,var(--g),var(--pu));
+  border:none;border-radius:6px;font-family:'Share Tech Mono',monospace;
+  font-size:.52rem;letter-spacing:.07em;color:#080b12;font-weight:700;
+  cursor:pointer;box-shadow:var(--sg);transition:opacity .18s}
+#cbtn:hover{opacity:.86}
 #cbtn:disabled{opacity:.35;pointer-events:none}
-.spin{width:24px;height:24px;border:2px solid rgba(0,229,176,.14);
+.spin{width:18px;height:18px;border:2px solid rgba(0,229,176,.14);
   border-top-color:var(--g);border-radius:50%;animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .fixbox{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.18);
-  border-radius:7px;padding:7px 10px;font-family:'Share Tech Mono',monospace;
-  font-size:.58rem;line-height:1.7;color:rgba(204,228,245,.62);max-width:180px;text-align:left}
+  border-radius:6px;padding:5px 8px;font-family:'Share Tech Mono',monospace;
+  font-size:.48rem;line-height:1.6;color:rgba(204,228,245,.62);max-width:140px;text-align:left}
 .fixbox b{color:var(--g)}
-#gpill{position:absolute;bottom:6px;left:50%;transform:translateX(-50%) scale(.85);
-  z-index:10;border-radius:7px;padding:3px 11px;font-family:'Share Tech Mono',monospace;
-  font-size:.6rem;border:1px solid var(--g);color:var(--g);
+#gpill{position:absolute;bottom:4px;left:50%;transform:translateX(-50%) scale(.85);
+  z-index:10;border-radius:5px;padding:2px 8px;font-family:'Share Tech Mono',monospace;
+  font-size:.5rem;border:1px solid var(--g);color:var(--g);
   background:rgba(8,11,18,.93);box-shadow:var(--sg);
   opacity:0;transition:opacity .2s,transform .2s;white-space:nowrap;pointer-events:none}
 #gpill.show{opacity:1;transform:translateX(-50%) scale(1)}
 #gpill.pp{border-color:var(--pu);color:var(--pu);box-shadow:var(--sp)}
-#cwrap{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);
+#cwrap{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);
   z-index:10;display:flex;flex-direction:column;align-items:center;gap:2px;
   pointer-events:none;opacity:0;transition:opacity .3s}
 #cwrap.show{opacity:1}
-#cwrap label{font-family:'Share Tech Mono',monospace;font-size:.46rem;
+#cwrap label{font-family:'Share Tech Mono',monospace;font-size:.4rem;
   color:rgba(0,229,176,.4);letter-spacing:.1em}
-#ctrack{width:60px;height:2px;background:rgba(0,229,176,.1);border-radius:100px;overflow:hidden}
+#ctrack{width:44px;height:2px;background:rgba(0,229,176,.1);border-radius:100px;overflow:hidden}
 #cfill{height:100%;background:var(--g);border-radius:100px;transition:width .12s,background .2s}
  
 /* gesture HUD */
@@ -340,18 +361,21 @@ Pack my box with five dozen liquor jugs.
     <!-- RIGHT -->
     <div id="right">
  
-      <!-- CAMERA -->
-      <div id="cam-section">
-        <div id="cam-ctrl">
-          <button id="camtoggle" onclick="toggleCam()" title="Toggle camera">⏻</button>
-          <span class="ctrl-label">camera</span>
+      <!-- CAMERA PIP (floating small card) -->
+      <div id="cam-pip">
+        <div id="cam-ctrl-bar">
+          <span class="pip-label">📷 CAM</span>
+          <div class="pip-btns">
+            <button id="camtoggle" onclick="toggleCam()" title="Toggle camera">⏻</button>
+            <button id="cam-collapse" onclick="togglePip()" title="Collapse">−</button>
+          </div>
         </div>
         <div id="cam-view">
           <div class="camov" id="permov">
             <div class="ico">📷</div>
             <h3>Enable Camera</h3>
-            <p>Gesture copy &amp; paste across devices.</p>
-            <button id="cbtn" onclick="startCam()">Enable Camera</button>
+            <p>Gesture copy &amp; paste.</p>
+            <button id="cbtn" onclick="startCam()">Enable</button>
           </div>
           <div class="camov" id="loadov" style="display:none">
             <div class="spin"></div>
@@ -360,7 +384,7 @@ Pack my box with five dozen liquor jugs.
             <div class="ico">🚫</div>
             <h3 style="color:var(--r)">Denied</h3>
             <div class="fixbox" id="fixbox"></div>
-            <button class="hb hbw" style="padding:4px 12px;margin-top:3px" onclick="retryCam()">↺ Retry</button>
+            <button class="hb hbw" style="padding:3px 9px;margin-top:2px;font-size:.5rem" onclick="retryCam()">↺ Retry</button>
           </div>
           <video id="camvid" playsinline autoplay muted></video>
           <canvas id="hcvs"></canvas>
@@ -943,6 +967,13 @@ async function startCam(){
     document.getElementById('fixbox').innerHTML=fix;
     toast('Camera denied — type to send instead','ty2');
   }
+}
+ 
+function togglePip(){
+  const pip=document.getElementById('cam-pip');
+  const btn=document.getElementById('cam-collapse');
+  const collapsed=pip.classList.toggle('collapsed');
+  btn.textContent=collapsed?'+':'−';
 }
  
 function retryCam(){
